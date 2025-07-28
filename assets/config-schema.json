@@ -1,0 +1,112 @@
+{
+  "type": "object",
+  "properties": {
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535,
+      "description": "The port the server is listening on."
+    },
+    "hostname": {
+      "type": "string",
+      "description": "The hostname the server is listening on. Does not include the port."
+    },
+    "unix_socket": {
+      "type": "string",
+      "description": "If set, the HTTP server will listen on a unix socket instead of a port."
+    },
+    "respect_system_proxy": {
+      "type": "boolean",
+      "default": true,
+      "description": "[DEPRECATED] Bun always respect system proxy in env vars. We don't have a way to disable it.\nRespect https_proxy, HTTPS_PROXY and use them for requests by default"
+    },
+    "override_model_owned_by": {
+      "type": "string",
+      "description": "Override \"owned_by\" in model list response"
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "baseDir": {
+          "type": "string",
+          "default": "./storage"
+        }
+      },
+      "required": [
+        "baseDir"
+      ]
+    },
+    "upstreams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "default_api_key": {
+            "type": "string"
+          },
+          "override_api_key": {
+            "type": "string"
+          },
+          "proxy": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "v1",
+              "anthropic",
+              "google",
+              "ollama",
+              "openai"
+            ],
+            "default": "v1",
+            "description": "AI upstream compatible type ('v1' represents this AI provider is compatibility with OpenAI v1 REST APIs. This is the default value)"
+          },
+          "only_public_models": {
+            "type": "boolean",
+            "description": "List models without providing API keys"
+          }
+        },
+        "required": [
+          "name",
+          "endpoint"
+        ]
+      }
+    },
+    "router": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "string"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        }
+      },
+      "required": [
+        "default"
+      ]
+    }
+  },
+  "required": [
+    "upstreams",
+    "router"
+  ]
+}
