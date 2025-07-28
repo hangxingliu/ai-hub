@@ -1,5 +1,6 @@
 # -*- mode: gitignore; -*-
 /config.yaml
+/docs/__private
 
 storage/logs
 storage/*.db
