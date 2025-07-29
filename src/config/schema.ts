@@ -50,6 +50,18 @@ export const storageSchema = {
   required: ["baseDir"],
 } satisfies JSONSchema;
 
+export const pluginSchema = {
+  type: "object",
+  properties: {
+    use: isStr("The name of the plugin or the path to the main file of the plugin"),
+    configs: {
+      type: 'object',
+      additionalProperties: true,
+    }
+  },
+  required: ["use"],
+} satisfies JSONSchema;
+
 export const configSchema = {
   type: "object",
   properties: {
@@ -67,6 +79,7 @@ export const configSchema = {
     storage: storageSchema,
     //
     upstreams: isArr(aiUpstreamSchema),
+    plugins: isArr(pluginSchema),
     router: aiRequestRouterSchema,
   },
   required: ["upstreams", "router"],

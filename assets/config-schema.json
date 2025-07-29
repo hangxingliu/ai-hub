@@ -95,6 +95,25 @@
         ]
       }
     },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "use": {
+            "type": "string",
+            "description": "The name of the plugin or the path to the main file of the plugin"
+          },
+          "configs": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "use"
+        ]
+      }
+    },
     "router": {
       "type": "object",
       "properties": {

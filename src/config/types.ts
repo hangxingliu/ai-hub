@@ -25,6 +25,11 @@ export interface Storage {
   baseDir: string;
 }
 
+export interface PluginInConfig {
+  use: string;
+  configs?: Record<string, any>;
+}
+
 export interface Config {
   port?: number;
   hostname?: string;
@@ -38,4 +43,5 @@ export interface Config {
   //
   upstreams: AIUpstream[];
   router: AIRequestRouter;
+  plugins: PluginInConfig[];
 }
