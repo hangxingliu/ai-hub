@@ -19,6 +19,12 @@ export const aiUpstreamSchema = {
         "AI upstream compatible type ('v1' represents this AI provider is compatibility with OpenAI v1 REST APIs. This is the default value)",
     }),
     only_public_models: isBool("List models without providing API keys"),
+    api_version: isStr("For example: '2023-06-01' for Anthropic upstream"),
+    default_headers: {
+      type: "object",
+      additionalProperties: { type: "string" },
+      description: "Additional headers for requests to this upstream. they might be overwritten by the client",
+    },
   },
   required: ["name", "endpoint"],
 } satisfies JSONSchema;

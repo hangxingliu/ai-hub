@@ -13,6 +13,8 @@ export type ParsedAIUpstream = {
   proxy?: string;
   only_public_models: boolean;
   type: AIUpstreamType;
+  api_version?: string;
+  default_headers: [key: Lowercase<string>, value: string][];
 };
 
 export function createAIUpstreamHash(upstream: AIUpstream) {
@@ -25,6 +27,8 @@ export function createAIUpstreamHash(upstream: AIUpstream) {
       upstream.default_api_key ?? null,
       upstream.override_api_key ?? null,
       upstream.only_public_models || false,
+      upstream.api_version || "",
+      upstream.default_headers || {},
     ];
   }
 
@@ -35,12 +39,24 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
   const upstream = { ..._upstream };
   upstream.endpoint = env.subst(upstream.endpoint);
   if (upstream.default_api_key) upstream.default_api_key = env.subst(upstream.default_api_key);
+  if (upstream.override_api_key) upstream.override_api_key = env.subst(upstream.override_api_key);
   if (upstream.proxy) upstream.proxy = env.subst(upstream.proxy);
 
   const hash = createAIUpstreamHash(upstream);
   const endpoint = new URL(upstream.endpoint);
   const type = upstream.type || "v1";
-  if (type !== "v1") throw new Error(`The server only support 'v1' as the upstream type now`);
+
+  const default_headers: ParsedAIUpstream["default_headers"] = [];
+  if (upstream.default_headers)
+    Object.entries(upstream.default_headers).forEach(([k, v]) => {
+      if (!k) return;
+      default_headers.push([k.toLowerCase() as Lowercase<string>, v]);
+    });
+
+  if (type === "anthropic" && !upstream.api_version) {
+    // https://docs.anthropic.com/en/api/versioning
+    upstream.api_version = "2023-06-01";
+  }
 
   return {
     hash,
@@ -48,8 +64,10 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
     endpoint,
     default_api_key: upstream.default_api_key,
     override_api_key: upstream.override_api_key,
+    api_version: upstream.api_version,
     proxy: upstream.proxy,
     only_public_models: upstream.only_public_models || false,
-    type: upstream.type || "v1",
+    type,
+    default_headers,
   };
 }

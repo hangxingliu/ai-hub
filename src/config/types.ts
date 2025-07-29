@@ -8,6 +8,8 @@ export interface AIUpstream {
   proxy?: string;
   only_public_models?: boolean;
   type?: AIUpstreamType;
+  api_version?: string;
+  default_headers?: Record<string, string>;
 }
 
 export interface AIRequestRoute {

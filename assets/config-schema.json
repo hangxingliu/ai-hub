@@ -71,6 +71,17 @@
           "only_public_models": {
             "type": "boolean",
             "description": "List models without providing API keys"
+          },
+          "api_version": {
+            "type": "string",
+            "description": "For example: '2023-06-01' for Anthropic upstream"
+          },
+          "default_headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Additional headers for requests to this upstream. they might be overwritten by the client"
           }
         },
         "required": [
