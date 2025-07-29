@@ -9,7 +9,6 @@ const pluginInit: PluginInitFn = ({ storage }) => {
       const messages = body.messages;
       // https://platform.openai.com/docs/api-reference/chat/create
       if (Array.isArray(messages)) {
-        storage.writeLogs("messages", body, false);
         const counts = new Map<string, any[]>();
         for (const msg of messages) {
           if (!msg) continue;

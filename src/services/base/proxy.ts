@@ -1,6 +1,8 @@
 import { Readable } from "stream";
 import { request as requestHTTP } from "http";
 import { request as requestHTTPS } from "https";
+import { WriteStream, createWriteStream } from "fs";
+import { relative } from "path";
 
 import { Tick } from "../../utils/tick.ts";
 import type { PluginFirstArg, PluginStateStorage } from "../../api-types.ts";
@@ -57,6 +59,7 @@ export async function proxyReqToUpstream(
   incomingHeaders: Headers,
   body: ParsedIncomingBody
 ) {
+  const writeLogs = !!storage.config.dump_request_logs;
   const state: PluginStateStorage = {};
   const upstreamURL = resolveUpstreamURL(upstream.endpoint, incomingURL.pathname);
   upstreamURL.search = incomingURL.search;
@@ -65,6 +68,12 @@ export async function proxyReqToUpstream(
   headers.set("Host", upstreamURL.host);
   updateHeadersToUpstream(headers, upstream, true);
   await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers, state });
+
+  let writeResp: string | undefined;
+  if (writeLogs) {
+    const target = storage.writeLogs("messages", body, false);
+    if (target?.filePath) writeResp = target.filePath.replace(/\.([\w-]+)$/, "-resp.$1");
+  }
 
   if (body.json) {
     const args: PluginFirstArg<"transformJsonBody"> = {
@@ -101,7 +110,17 @@ export async function proxyReqToUpstream(
         agent: httpProxy.agent,
       },
       (upstreamRes) => {
-        let log = `<- ${upstreamRes.statusCode} "${parseContentType(upstreamRes.headers["content-type"]).raw}"`;
+        let debugStream: WriteStream | undefined;
+        if (writeResp) {
+          debugStream = createWriteStream(writeResp, { autoClose: true });
+          const prefix: string[] = [upstreamRes.url || ""];
+          for (const [key, value] of Object.entries(upstreamRes.headers)) prefix.push(`${key}: ${value}`);
+          debugStream.write(`${prefix.join("\n")}\n\n`);
+        }
+
+        const contentType = parseContentType(upstreamRes.headers["content-type"]);
+        let log = `<- ${upstreamRes.statusCode}`;
+        if (contentType.raw) log += ` "${contentType.raw}"`;
         log += ` ${COLORS_ALL.DIM}+${tick().str}${COLORS_ALL.RESET}`;
         console.log(log);
 
@@ -114,6 +133,7 @@ export async function proxyReqToUpstream(
           },
         });
         const onData = (chunk: Buffer) => {
+          if (debugStream) debugStream.write(chunk);
           // process.stderr.write(chunk.toString("utf-8"));
           controller?.enqueue(chunk);
           totalSizes += chunk.length;
@@ -129,6 +149,11 @@ export async function proxyReqToUpstream(
 
           upstreamRes.off("data", onData);
           controller?.close();
+          if (debugStream) {
+            debugStream.close();
+            const relPath = relative(process.cwd(), writeResp!);
+            console.log(`${COLORS_ALL.DIM}dump to "${relPath}"${COLORS_ALL.RESET}`);
+          }
         });
 
         const res = new Response(stream, {

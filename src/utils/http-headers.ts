@@ -41,8 +41,9 @@ export function dumpHeaders(headers?: Bun.HeadersInit): Record<string, string> &
 }
 
 export type ParsedContentType = {
-  isJSON?: boolean;
-  isFormData?: boolean;
+  isJSON?: true;
+  isFormData?: true;
+  isEventStream?: true;
   raw: string;
 };
 
@@ -56,8 +57,10 @@ export function parseContentType(contentType?: Headers | string | null): ParsedC
     contentType = contentType.slice(0, index);
     args = contentType.slice(index + 1);
   }
-  contentType = contentType.toLowerCase();
-  if (contentType.endsWith("/json")) return { isJSON: true, raw: contentType };
-  if (contentType === "multipart/form-data") return { isFormData: true, raw: contentType };
-  return { raw: contentType };
+
+  const raw = contentType.toLowerCase();
+  if (contentType.endsWith('/event-stream')) return { isEventStream: true, raw };
+  if (contentType.endsWith("/json")) return { isJSON: true, raw };
+  if (contentType === "multipart/form-data") return { isFormData: true, raw };
+  return { raw };
 }
