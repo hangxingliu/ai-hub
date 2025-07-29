@@ -3,7 +3,7 @@ import { request as requestHTTP } from "http";
 import { request as requestHTTPS } from "https";
 
 import { Tick } from "../../utils/tick.ts";
-import type { PluginFirstArg } from "../../api-types.ts";
+import type { PluginFirstArg, PluginStateStorage } from "../../api-types.ts";
 import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.ts";
 import type { StorageManager } from "../../storage/index.ts";
 import { isHTTPS } from "../../utils/is-https.ts";
@@ -57,21 +57,23 @@ export async function proxyReqToUpstream(
   incomingHeaders: Headers,
   body: ParsedIncomingBody
 ) {
+  const state: PluginStateStorage = {};
   const upstreamURL = resolveUpstreamURL(upstream.endpoint, incomingURL.pathname);
   upstreamURL.search = incomingURL.search;
 
   const headers = new Headers(incomingHeaders);
   headers.set("Host", upstreamURL.host);
   updateHeadersToUpstream(headers, upstream, true);
-  await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers }, storage);
+  await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers, state });
 
   if (body.json) {
     const args: PluginFirstArg<"transformJsonBody"> = {
       method,
       target: upstreamURL,
       body: body.json,
+      state,
     };
-    await callPlugins(storage.plugins, "transformJsonBody", args, storage);
+    await callPlugins(storage.plugins, "transformJsonBody", args);
     body.json = args.body;
   }
 

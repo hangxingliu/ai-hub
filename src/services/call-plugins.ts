@@ -1,8 +1,8 @@
-import type { Plugin, PluginArgs } from "../api-types.ts";
+import type { PluginInstance, PluginArgs, ResolvedPlugin } from "../api-types.ts";
 import { getErrorMessage } from "../utils/error.ts";
 
-export async function callPlugins<Method extends keyof Plugin>(
-  plugins: Plugin[],
+export async function callPlugins<Method extends keyof PluginInstance>(
+  plugins: ReadonlyArray<ResolvedPlugin>,
   method: Method,
   ...args: PluginArgs<Method>
 ) {
@@ -12,7 +12,8 @@ export async function callPlugins<Method extends keyof Plugin>(
     try {
       await fn.apply(null, args);
     } catch (error) {
-      console.error(`Error in plugin[${plugin.name}].${method}: ${getErrorMessage(error)}`);
+      const path = `plugin[${plugin.pluginName}].${method}:`;
+      console.error(`Error in ${path} ${getErrorMessage(error)}`);
     }
   }
 }

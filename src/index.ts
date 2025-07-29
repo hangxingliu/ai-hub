@@ -9,10 +9,10 @@ import { BeforeExit } from "./utils/before-exit.ts";
 import { createV1ModelsRoute } from "./routes/v1-models.ts";
 import { createFallbackRoute } from "./routes/index.ts";
 import { createHomePageRoute } from "./routes/homepage.ts";
-import removeTelemetryHeaders from "./plugins/remove-telemetry-headers.ts";
-import debugRequestMessages from "./plugins/debug-request-messages.ts";
-import keepOnlyLastMessage from "./plugins/keep-only-last-message.ts";
-import FAV_ICON_PATH from "../assets/favicon.ico" with { loader: "file" };
+import { initPlugins } from "./plugins/init.ts";
+import { DEFAULT_PLUGINS } from "./plugins/index.ts";
+//
+import FAV_ICON_PATH from "../assets/favicon.ico";
 
 const { values: options, positionals: args } = parseArgs({
   options: {
@@ -27,12 +27,7 @@ const config = await loadConfigFile(options.config);
 const listen = getBunServerListenOptions(config);
 
 const storage = new StorageManager(config);
-storage.plugins.push(
-  //
-  removeTelemetryHeaders,
-  keepOnlyLastMessage,
-  // debugRequestMessages
-);
+await initPlugins(storage, [...DEFAULT_PLUGINS]);
 
 for (const upstream of storage.upstreams) await getOrUpdateModels(storage, upstream);
 

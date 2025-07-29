@@ -8,33 +8,54 @@ export type OpenAIModelsResult = {
   data: OpenAIModel[];
 };
 
-export type PluginArgs<Method extends keyof Plugin> = Required<Plugin>[Method] extends (...args: infer Params) => any
+export type OpenAIChatCompletionChunk = OpenAI.ChatCompletionChunk;
+
+export type PluginArgs<Method extends keyof PluginInstance> = Required<PluginInstance>[Method] extends (
+  ...args: infer Params
+) => any
   ? Params
   : never;
-export type PluginFirstArg<Method extends keyof Plugin> = Required<Plugin>[Method] extends (
+
+export type PluginFirstArg<Method extends keyof PluginInstance> = Required<PluginInstance>[Method] extends (
   ...args: infer Params
 ) => any
   ? Params[0]
   : never;
 
-export interface Plugin {
-  name: string;
+export type PluginStateStorage = Record<string, any>;
 
-  transformHeaders?: (
+type PromiseLike<T> = T | Promise<T>;
+type PromiseLikeOrVoid<T> = PromiseLike<void> | PromiseLike<T>;
+
+export type Plugin = PluginInitFn & { pluginName: string };
+
+export type PluginInitFn = (args: { storage: StorageManager }) => PromiseLike<PluginInstance>;
+
+export type ResolvedPlugin = PluginInstance & { pluginName: string };
+
+export interface PluginInstance {
+  transformHeaders?: (args: {
+    readonly method: Uppercase<string>;
+    readonly target: URL;
+    readonly headers: Headers;
+    readonly state: PluginStateStorage;
+  }) => PromiseLike<void>;
+
+  transformJsonBody?: (args: {
+    readonly method: Uppercase<string>;
+    readonly target: URL;
+    readonly state: PluginStateStorage;
+    body: Record<string, any>;
+  }) => PromiseLike<void>;
+
+  handleStreamChunk?: (
     args: {
       readonly method: Uppercase<string>;
       readonly target: URL;
-      readonly headers: Headers;
+      readonly state: PluginStateStorage;
+      chunks: OpenAI.ChatCompletionChunk[];
+      done?: true;
     },
     storage: StorageManager
-  ) => void | Promise<void>;
-
-  transformJsonBody?: (
-    args: {
-      readonly method: Uppercase<string>;
-      readonly target: URL;
-      body: Record<string, any>;
-    },
-    storage: StorageManager
-  ) => void | Promise<void>;
+  ) => PromiseLikeOrVoid<OpenAI.ChatCompletionChunk[]>;
 }
