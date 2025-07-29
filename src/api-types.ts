@@ -1,4 +1,5 @@
 import { OpenAI } from "openai";
+import type { StorageManager } from "./storage/index.ts";
 
 export type OpenAIModel = OpenAI.Model;
 export type OpenAIModelWithUpstream = OpenAI.Model & { upstream: string };
@@ -19,15 +20,21 @@ export type PluginFirstArg<Method extends keyof Plugin> = Required<Plugin>[Metho
 export interface Plugin {
   name: string;
 
-  transformHeaders?: (args: {
-    readonly method: Uppercase<string>;
-    readonly target: URL;
-    readonly headers: Headers;
-  }) => void | Promise<void>;
+  transformHeaders?: (
+    args: {
+      readonly method: Uppercase<string>;
+      readonly target: URL;
+      readonly headers: Headers;
+    },
+    storage: StorageManager
+  ) => void | Promise<void>;
 
-  transformJsonBody?: (args: {
-    readonly method: Uppercase<string>;
-    readonly target: URL;
-    body: Record<string, any>;
-  }) => void | Promise<void>;
+  transformJsonBody?: (
+    args: {
+      readonly method: Uppercase<string>;
+      readonly target: URL;
+      body: Record<string, any>;
+    },
+    storage: StorageManager
+  ) => void | Promise<void>;
 }

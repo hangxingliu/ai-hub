@@ -63,7 +63,7 @@ export async function proxyReqToUpstream(
   const headers = new Headers(incomingHeaders);
   headers.set("Host", upstreamURL.host);
   updateHeadersForUpstreamAuth(headers, upstream);
-  await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers });
+  await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers }, storage);
 
   if (body.json) {
     const args: PluginFirstArg<"transformJsonBody"> = {
@@ -71,7 +71,7 @@ export async function proxyReqToUpstream(
       target: upstreamURL,
       body: body.json,
     };
-    await callPlugins(storage.plugins, "transformJsonBody", args);
+    await callPlugins(storage.plugins, "transformJsonBody", args, storage);
     body.json = args.body;
   }
 
