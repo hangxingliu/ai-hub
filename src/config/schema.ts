@@ -62,6 +62,7 @@ export const configSchema = {
       "[DEPRECATED] Bun always respect system proxy in env vars. We don't have a way to disable it.\nRespect https_proxy, HTTPS_PROXY and use them for requests by default"
     ),
     override_model_owned_by: isStr('Override "owned_by" in model list response'),
+    dump_request_logs: isBool(false, "Write request payload and response into log files"),
     //
     storage: storageSchema,
     //

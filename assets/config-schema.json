@@ -24,6 +24,11 @@
       "type": "string",
       "description": "Override \"owned_by\" in model list response"
     },
+    "dump_request_logs": {
+      "type": "boolean",
+      "default": false,
+      "description": "Write request payload and response into log files"
+    },
     "storage": {
       "type": "object",
       "properties": {

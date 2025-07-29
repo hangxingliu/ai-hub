@@ -32,6 +32,7 @@ export interface Config {
   /** @deprecated Bun always respect system proxy in env vars. We don't have a way to disable it. */
   respect_system_proxy?: boolean;
   override_model_owned_by?: string;
+  dump_request_logs?: boolean;
   //
   storage: Storage;
   //
