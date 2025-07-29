@@ -2,11 +2,12 @@ import type { Plugin } from "../api-types.ts";
 
 const debugRequestMessages: Plugin = {
   name: "debug-request-messages",
-  transformJsonBody(args) {
+  transformJsonBody(args, storage) {
     const body = args.body;
     const messages = body.messages;
     // https://platform.openai.com/docs/api-reference/chat/create
     if (Array.isArray(messages)) {
+      storage.writeLogs('messages', body, false);
       const counts = new Map<string, any[]>();
       for (const msg of messages) {
         if (!msg) continue;

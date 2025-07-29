@@ -18,7 +18,7 @@ function printUpstreamFetch(url: URL, req: BunFetchRequestInit, reqFrom: number,
 
   if (req.body) log += ` [with-body]`;
 
-  const auth = getRequestHeader(req.headers, "Authorization");
+  const auth = getRequestHeader(req.headers, "Authorization") || getRequestHeader(req.headers, "x-api-key");
   if (auth) log += ` ${COLORS_ALL.BLUE_DARK}[with-auth]${RESET}`;
   if (req.proxy) log += ` ${COLORS_ALL.ORANGE_DARK}[proxy=${req.proxy}]${RESET}`;
 

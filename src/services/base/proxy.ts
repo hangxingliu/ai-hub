@@ -10,7 +10,7 @@ import { isHTTPS } from "../../utils/is-https.ts";
 import { callPlugins } from "../call-plugins.ts";
 import { parseIncomingBody, type ParsedIncomingBody } from "./incoming-body.ts";
 import { printIncomingForProxy } from "./incoming.ts";
-import { updateHeadersForUpstreamAuth } from "./upstream-auth.ts";
+import { updateHeadersToUpstream } from "./upstream-headers.ts";
 import { parseContentType } from "../../utils/http-headers.ts";
 import { COLORS_ALL } from "../../utils/colors/index.ts";
 import { getErrorMessage } from "../../utils/error.ts";
@@ -62,7 +62,7 @@ export async function proxyReqToUpstream(
 
   const headers = new Headers(incomingHeaders);
   headers.set("Host", upstreamURL.host);
-  updateHeadersForUpstreamAuth(headers, upstream);
+  updateHeadersToUpstream(headers, upstream, true);
   await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers }, storage);
 
   if (body.json) {
@@ -86,6 +86,7 @@ export async function proxyReqToUpstream(
     httpProxy?.url,
     upstreamURL
   );
+  console.log(`-> ${upstreamURL.toString()}`);
 
   return new Promise<Response>((resolve, reject) => {
     const { tick } = new Tick();

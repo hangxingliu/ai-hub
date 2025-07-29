@@ -22,6 +22,7 @@ export function createFallbackRoute(storage: StorageManager) {
       }
     }
 
+    url.pathname = url.pathname.replace(/^\/v1\//, '/');
     return await proxyReqToUpstream(storage, upstream, method, url, req.headers, body);
 
     // ==================

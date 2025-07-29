@@ -5,6 +5,7 @@ import type { OpenAIModelsResult } from "../api-types.ts";
 import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
 import { COLORS_ALL } from "../utils/colors/index.ts";
 import { resolveUpstreamURL } from "./base/upstream-url.ts";
+import { updateHeadersToUpstream } from "./base/upstream-headers.ts";
 
 const MODELS_RESULT_SCHEMA: JSONSchema = {
   type: "object",
@@ -25,8 +26,8 @@ const MODELS_RESULT_SCHEMA: JSONSchema = {
 
 export async function updateModelsFromUpstream(storage: StorageManager, upstream: ParsedAIUpstream) {
   const apiURL = resolveUpstreamURL(upstream.endpoint, "/models");
-  const headers: Bun.HeadersInit = {};
-  if (upstream.default_api_key) headers["Authorization"] = `Bearer ${upstream.default_api_key}`;
+  const headers = new Headers();
+  if (!upstream.only_public_models) updateHeadersToUpstream(headers, upstream, false);
 
   const models = await fetchUpstreamJSON<OpenAIModelsResult>(
     apiURL,
@@ -48,7 +49,7 @@ export async function updateModelsFromUpstream(storage: StorageManager, upstream
     log += ` ${COLORS_ALL.CYAN_DARK}new=${JSON.stringify(changes.newModels)}${COLORS_ALL.RESET}`;
   console.log(log);
 
-  storage.kv.set(`models:${upstream.name}:${upstream.hash}`, models);
+  storage.kv.set(`models:${upstream.name}:${upstream.hash}`, models, 24 * 3600 * 1000);
   return models;
 }
 
