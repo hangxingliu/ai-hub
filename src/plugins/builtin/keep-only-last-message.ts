@@ -1,10 +1,13 @@
 import type { Plugin, PluginInitFn } from "../types.ts";
 
-const FLAG = "/only_last";
+const DEFAULT_FLAG = "/only_last";
 
 const pluginName = "keep-only-last_message";
 
-const pluginInit: PluginInitFn = () => {
+const pluginInit: PluginInitFn = ({ configs }) => {
+  let flag = DEFAULT_FLAG;
+  if (typeof configs.flag === 'string' && configs.flag) flag = configs.flag;
+
   return {
     transformJsonBody(args) {
       const body = args.body;
@@ -16,10 +19,10 @@ const pluginInit: PluginInitFn = () => {
         if (!msg || msg.role !== "system" || typeof msg.content !== "string") continue;
         const msgStr = msg.content as string;
 
-        const index = msgStr.indexOf(FLAG);
+        const index = msgStr.indexOf(flag);
         if (index < 0) continue;
 
-        msg.content = msgStr.slice(0, index) + msgStr.slice(index + FLAG.length);
+        msg.content = msgStr.slice(0, index) + msgStr.slice(index + flag.length);
         enabled = true;
         break;
       }
