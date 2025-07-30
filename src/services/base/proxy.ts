@@ -90,6 +90,7 @@ export async function proxyReqToUpstream(
       target: upstreamURL,
       body: body.json,
       state,
+      modelId: body.modelId,
     };
     pluginResult = await callPlugins(storage.plugins, "transformJsonBody", args);
     if (pluginResult.response) return pluginResult.response;

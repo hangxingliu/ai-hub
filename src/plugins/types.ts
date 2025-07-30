@@ -54,6 +54,7 @@ export interface PluginInstance {
       readonly method: Uppercase<string>;
       readonly target: URL;
       readonly state: PluginStateStorage;
+      readonly modelId?: string;
       body: Record<string, any>;
     }
   ) => PromiseLike<void>;

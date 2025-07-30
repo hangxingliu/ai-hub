@@ -112,6 +112,9 @@
                 "const": "remove-telemetry-headers"
               },
               {
+                "const": "disable-models"
+              },
+              {
                 "const": "debug-request-messages"
               },
               {
@@ -195,7 +198,36 @@
               }
             }
           },
-          "else": {}
+          "else": {
+            "if": {
+              "properties": {
+                "use": {
+                  "const": "disable-models"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "configs": {
+                  "type": "object",
+                  "properties": {
+                    "patterns": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "description": "a regualr expression for matching model name"
+                      }
+                    },
+                    "status_code": {
+                      "type": "integer",
+                      "default": 404
+                    }
+                  }
+                }
+              }
+            },
+            "else": {}
+          }
         }
       }
     },
