@@ -1,4 +1,4 @@
-import type { PluginInstance, PluginArgs, ResolvedPlugin } from "../api-types.ts";
+import type { PluginInstance, PluginArgs, ResolvedPlugin } from "../plugins/types.ts";
 import { getErrorMessage } from "../utils/error.ts";
 
 export async function callPlugins<Method extends keyof PluginInstance>(

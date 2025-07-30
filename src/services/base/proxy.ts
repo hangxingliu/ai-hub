@@ -1,11 +1,11 @@
-import { Readable } from "stream";
+import { Readable, Writable } from "stream";
 import { request as requestHTTP } from "http";
 import { request as requestHTTPS } from "https";
 import { WriteStream, createWriteStream } from "fs";
 import { relative } from "path";
 
 import { Tick } from "../../utils/tick.ts";
-import type { PluginFirstArg, PluginStateStorage } from "../../api-types.ts";
+import type { PluginFirstArg, PluginStateStorage } from "../../plugins/types.ts";
 import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.ts";
 import type { StorageManager } from "../../storage/index.ts";
 import { isHTTPS } from "../../utils/is-https.ts";

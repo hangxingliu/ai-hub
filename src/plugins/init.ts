@@ -1,20 +1,36 @@
+import { resolve } from "node:path";
+
+import type { PluginInConfig } from "../config/types.ts";
 import type { StorageManager } from "../storage/index.ts";
 import { COLORS_ALL } from "../utils/colors/index.ts";
 import { Tick } from "../utils/tick.ts";
 import { BUILTIN_PLUGINS } from "./index.ts";
+import { getErrorMessage } from "../utils/error.ts";
 
 /** @TODO add support for external plugins  */
-export async function initPlugins(storage: StorageManager, pluginNames: ReadonlyArray<string>) {
-  for (const pluginName of pluginNames) {
-    const Plugin = BUILTIN_PLUGINS.find((it) => it.pluginName === pluginName);
+export async function initPlugins(storage: StorageManager, plugins: PluginInConfig[]) {
+  for (const rawPlugin of plugins) {
+    let pluginName = rawPlugin.use;
+    let Plugin = BUILTIN_PLUGINS.find((it) => it.pluginName === rawPlugin.use);
     if (!Plugin) {
-      console.error(`Error: unknown plugin "${pluginName}"`);
-      continue;
+      const pluginEntrypoint = resolve(storage.config.baseDir, rawPlugin.use);
+      try {
+        Plugin = (await import(pluginEntrypoint)).default;
+      } catch (error) {
+        console.error(`Error: Failed to load the plugin "${pluginName}": ${getErrorMessage(error)}`);
+        continue;
+      }
+      if (!Plugin || typeof Plugin !== 'function') {
+        console.error(`Error: Invalid plugin "${pluginName}": It is not a function`);
+        continue;
+      }
+      if (typeof Plugin.pluginName === 'string') pluginName = Plugin.pluginName;
     }
 
     const { tick } = new Tick();
     try {
-      const plugin = await Plugin({ storage });
+      const pluginConfigs = rawPlugin.configs || {};
+      const plugin = await Plugin({ storage, configs: pluginConfigs });
       storage.plugins.push(Object.assign(plugin, { pluginName }));
     } catch (error) {
       console.error(`Error: failed to init the plugin "${pluginName}"`);

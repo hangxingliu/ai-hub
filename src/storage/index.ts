@@ -9,7 +9,7 @@ import { BunSQLiteKV } from "../utils/database/kv.ts";
 import { ModelsManager } from "./models.ts";
 import { ProxyAgents } from "./http-proxy-agents.ts";
 import type { KVs } from "./kv.ts";
-import type { ResolvedPlugin } from "../api-types.ts";
+import type { ResolvedPlugin } from "../plugins/types.ts";
 
 export class StorageManager implements Disposable {
   readonly storageDir: string;

@@ -27,7 +27,7 @@ const config = await loadConfigFile(options.config);
 const listen = getBunServerListenOptions(config);
 
 const storage = new StorageManager(config);
-await initPlugins(storage, [...DEFAULT_PLUGINS]);
+await initPlugins(storage, Array.isArray(config.plugins) ? config.plugins : [...DEFAULT_PLUGINS]);
 
 for (const upstream of storage.upstreams) await getOrUpdateModels(storage, upstream);
 

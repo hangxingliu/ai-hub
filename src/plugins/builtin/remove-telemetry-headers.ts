@@ -1,4 +1,4 @@
-import type { Plugin, PluginInitFn } from "../api-types.ts";
+import type { Plugin, PluginInitFn } from "../types.ts";
 
 const pluginName = "remove-telemetry-headers";
 
