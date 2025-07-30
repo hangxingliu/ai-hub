@@ -7,6 +7,7 @@ export type OpenAIModelsResult = {
   data: OpenAIModel[];
 };
 
+export type OpenAIChatParams = OpenAI.ChatCompletionCreateParams;
 export type OpenAIChatMessages = OpenAI.ChatCompletionMessageParam[];
 
 export type OpenAIChatCompletionChunk = OpenAI.ChatCompletionChunk;
