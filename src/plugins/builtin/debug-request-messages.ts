@@ -1,6 +1,20 @@
 import type { Plugin, PluginInitFn } from "../types.ts";
+import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
 
 const pluginName = "debug-request-messages";
+export const pluginSchema = {
+  type: "object",
+  properties: {
+    use: { type: "string", const: pluginName },
+    configs: {
+      type: "object",
+      additionalProperties: true,
+      properties: {
+      },
+    },
+  },
+  required: ['use']
+} satisfies JSONSchema;
 
 const pluginInit: PluginInitFn = ({ storage }) => {
   return {

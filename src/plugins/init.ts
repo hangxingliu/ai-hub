@@ -7,8 +7,10 @@ import { Tick } from "../utils/tick.ts";
 import { BUILTIN_PLUGINS } from "./index.ts";
 import { getErrorMessage } from "../utils/error.ts";
 
-/** @TODO add support for external plugins  */
 export async function initPlugins(storage: StorageManager, plugins: PluginInConfig[]) {
+  const loaded = new Set<string>();
+  storage.plugins.forEach(({ pluginName }) => loaded.add(pluginName));
+
   for (const rawPlugin of plugins) {
     let pluginName = rawPlugin.use;
     let Plugin = BUILTIN_PLUGINS.find((it) => it.pluginName === rawPlugin.use);
@@ -20,11 +22,15 @@ export async function initPlugins(storage: StorageManager, plugins: PluginInConf
         console.error(`Error: Failed to load the plugin "${pluginName}": ${getErrorMessage(error)}`);
         continue;
       }
-      if (!Plugin || typeof Plugin !== 'function') {
+      if (!Plugin || typeof Plugin !== "function") {
         console.error(`Error: Invalid plugin "${pluginName}": It is not a function`);
         continue;
       }
-      if (typeof Plugin.pluginName === 'string') pluginName = Plugin.pluginName;
+      if (typeof Plugin.pluginName === "string") pluginName = Plugin.pluginName;
+      if (loaded.has(pluginName)) {
+        console.warn(`Warn: Duplicate plugin "${pluginName}"`);
+        continue;
+      }
     }
 
     const { tick } = new Tick();
@@ -32,6 +38,7 @@ export async function initPlugins(storage: StorageManager, plugins: PluginInConf
       const pluginConfigs = rawPlugin.configs || {};
       const plugin = await Plugin({ storage, configs: pluginConfigs });
       storage.plugins.push(Object.assign(plugin, { pluginName }));
+      loaded.add(pluginName);
     } catch (error) {
       console.error(`Error: failed to init the plugin "${pluginName}"`);
       console.error(error);

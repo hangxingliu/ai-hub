@@ -98,19 +98,79 @@
     "plugins": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "use": {
-            "type": "string",
-            "description": "The name of the plugin or the path to the main file of the plugin"
-          },
-          "configs": {
+        "anyOf": [
+          {
             "type": "object",
-            "additionalProperties": true
+            "properties": {
+              "use": {
+                "type": "string",
+                "const": "keep-only-last-message"
+              },
+              "configs": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "flag": {
+                    "type": "string",
+                    "description": "default: /only_last"
+                  }
+                }
+              }
+            },
+            "required": [
+              "use"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "use": {
+                "type": "string",
+                "const": "remove-telemetry-headers"
+              },
+              "configs": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {}
+              }
+            },
+            "required": [
+              "use"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "use": {
+                "type": "string",
+                "const": "debug-request-messages"
+              },
+              "configs": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {}
+              }
+            },
+            "required": [
+              "use"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "use": {
+                "type": "string",
+                "description": "The name of the plugin or the path to the main file of the plugin"
+              },
+              "configs": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "use"
+            ]
           }
-        },
-        "required": [
-          "use"
         ]
       }
     },

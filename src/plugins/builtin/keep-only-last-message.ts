@@ -1,12 +1,27 @@
+import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
 import type { Plugin, PluginInitFn } from "../types.ts";
 
 const DEFAULT_FLAG = "/only_last";
 
-const pluginName = "keep-only-last_message";
+const pluginName = "keep-only-last-message" as const;
+export const pluginSchema = {
+  type: "object",
+  properties: {
+    use: { type: "string", const: pluginName },
+    configs: {
+      type: "object",
+      additionalProperties: true,
+      properties: {
+        flag: { type: "string", description: `default: ${DEFAULT_FLAG}` },
+      },
+    },
+  },
+  required: ['use']
+} satisfies JSONSchema;
 
 const pluginInit: PluginInitFn = ({ configs }) => {
   let flag = DEFAULT_FLAG;
-  if (typeof configs.flag === 'string' && configs.flag) flag = configs.flag;
+  if (typeof configs.flag === "string" && configs.flag) flag = configs.flag;
 
   return {
     transformJsonBody(args) {
@@ -50,7 +65,7 @@ const pluginInit: PluginInitFn = ({ configs }) => {
 
       body.messages = newMessages.concat(reserved);
     },
-  }
+  };
 };
 
 export default Object.assign(pluginInit, { pluginName }) as Plugin;
