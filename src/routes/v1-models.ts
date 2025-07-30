@@ -9,7 +9,7 @@ export function createV1ModelsRoute(storage: StorageManager) {
   return async function (req: Bun.BunRequest<"/v1/models">): Promise<Response> {
     printIncoming("models", req.method, req.url);
 
-    if (typeof lastFetch === 'undefined') lastFetch = storage.kv.get('last_models_fetch') || 0;
+    if (typeof lastFetch === "undefined") lastFetch = storage.kv.get("last_models_fetch") || 0;
     let anyError: unknown;
     if (Date.now() - lastFetch > MIN_INTERVAL) {
       for (const upstream of storage.upstreams) {
@@ -21,7 +21,7 @@ export function createV1ModelsRoute(storage: StorageManager) {
         }
       }
       lastFetch = Date.now();
-      storage.kv.set('last_models_fetch', lastFetch);
+      storage.kv.set("last_models_fetch", lastFetch);
       if (anyError) throw anyError;
     }
 
