@@ -1,9 +1,10 @@
 //@ts-check
+import { Glob } from "bun";
 import { basename, resolve } from "path";
 import { writeFileSync } from "fs";
 import { configSchema } from "./schema.js";
 import type { JSONSchema } from "../utils/json-schema/schema-types.js";
-import { Glob } from "bun";
+import type { Plugin } from "../plugins/types.js";
 
 const targetFile = resolve(import.meta.dirname, "../../assets/config-schema.json");
 const builtinPlugins = new Glob("*.ts").scan({
@@ -11,20 +12,43 @@ const builtinPlugins = new Glob("*.ts").scan({
   absolute: true,
 });
 
-const anyOf: JSONSchema[] = [];
+const conds: { cond: string; schema: JSONSchema }[] = [];
 const anyNames: string[] = [];
 for await (const pluginFile of builtinPlugins) {
   const name = basename(pluginFile);
   if (name.startsWith(".") || name.startsWith("__")) continue;
 
-  const mod = await import(pluginFile);
-  if (typeof mod?.pluginSchema !== "object" && !mod.pluginSchema) continue;
-  anyOf.push(mod.pluginSchema);
+  const mod = (await import(pluginFile)).default as Plugin;
+  if (typeof mod?.configSchema !== "object" && !mod.configSchema) {
+    console.error(`No \`configSchema\` in "${pluginFile}"`);
+    continue;
+  }
+
+  const thisName = mod.pluginName;
+  if (!thisName) {
+    console.error(`No \`pluginName\` in "${pluginFile}"`);
+    continue;
+  }
+
+  const thisConfig = mod.configSchema.properties;
+  if (thisConfig && Object.keys(thisConfig).length > 0) conds.push({ cond: thisName, schema: mod.configSchema });
+  anyNames.push(thisName);
 }
 
-const generalPluginSchema = configSchema.properties.plugins.items;
-anyOf.push(generalPluginSchema);
-(configSchema.properties.plugins.items as any) = { anyOf };
+// const generalPluginSchema = configSchema.properties.plugins.items;
+let ptr = configSchema.properties.plugins.items as JSONSchema;
+ptr.properties!.use = {
+  anyOf: [...anyNames.map((it) => ({ const: it })), ptr.properties!.use],
+};
+
+while (conds.length > 0) {
+  const { cond, schema } = conds.shift()!;
+  ptr.if = { properties: { use: { const: cond } } };
+  ptr.then = { properties: { configs: schema } };
+  ptr.else = {};
+  ptr = ptr.else;
+}
+// (configSchema.properties.plugins.items as any) = { anyOf };
 
 writeFileSync(targetFile, JSON.stringify(configSchema, null, 2));
 console.log(`+ generated ${targetFile}`);

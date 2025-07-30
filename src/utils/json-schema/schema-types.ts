@@ -110,4 +110,13 @@ export type JSONSchema = {
   oneOf?: JSONSchema[];
   not?: JSONSchema;
   //#endregion composition
+
+  //
+  //#region conditionals
+  // https://json-schema.org/understanding-json-schema/reference/conditionals
+  if?: JSONSchema;
+  then?: JSONSchema;
+  else?: JSONSchema;
+  //#endregion conditionals
+  //
 };

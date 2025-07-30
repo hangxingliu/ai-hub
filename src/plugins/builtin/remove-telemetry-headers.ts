@@ -1,22 +1,14 @@
 import type { Plugin, PluginInitFn } from "../types.ts";
 import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
+import type { TypeFromJSONSchema } from "../../utils/json-schema/types.ts";
 
 const pluginName = "remove-telemetry-headers";
-export const pluginSchema = {
+const configSchema = {
   type: "object",
-  properties: {
-    use: { type: "string", const: pluginName },
-    configs: {
-      type: "object",
-      additionalProperties: true,
-      properties: {
-      },
-    },
-  },
-  required: ['use']
+  properties: {},
 } satisfies JSONSchema;
 
-const pluginInit: PluginInitFn = ({ storage }) => {
+const pluginInit: PluginInitFn<TypeFromJSONSchema<typeof configSchema>> = ({ storage }) => {
   return {
     transformHeaders(args) {
       const keys = Array.from(args.headers.keys());
@@ -27,7 +19,7 @@ const pluginInit: PluginInitFn = ({ storage }) => {
         }
       }
     },
-  }
+  };
 };
 
-export default Object.assign(pluginInit, { pluginName }) as Plugin;
+export default Object.assign(pluginInit, { pluginName, configSchema }) as Plugin;

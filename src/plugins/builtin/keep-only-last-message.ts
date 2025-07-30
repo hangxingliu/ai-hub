@@ -1,29 +1,24 @@
 import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
+import type { TypeFromJSONSchema } from "../../utils/json-schema/types.ts";
 import type { Plugin, PluginInitFn } from "../types.ts";
 
 const DEFAULT_FLAG = "/only_last";
 
 const pluginName = "keep-only-last-message" as const;
-export const pluginSchema = {
+const configSchema = {
   type: "object",
   properties: {
-    use: { type: "string", const: pluginName },
-    configs: {
-      type: "object",
-      additionalProperties: true,
-      properties: {
-        flag: { type: "string", description: `default: ${DEFAULT_FLAG}` },
-      },
-    },
+    flag: { type: "string", description: `default: ${DEFAULT_FLAG}` },
   },
-  required: ['use']
 } satisfies JSONSchema;
 
-const pluginInit: PluginInitFn = ({ configs }) => {
+const pluginInit: PluginInitFn<TypeFromJSONSchema<typeof configSchema>> = ({ configs }) => {
   let flag = DEFAULT_FLAG;
   if (typeof configs.flag === "string" && configs.flag) flag = configs.flag;
 
   return {
+    initialized: `use '${flag}' in system message to keep only last user message`,
+
     transformJsonBody(args) {
       const body = args.body;
       const messages = body.messages;
@@ -68,4 +63,4 @@ const pluginInit: PluginInitFn = ({ configs }) => {
   };
 };
 
-export default Object.assign(pluginInit, { pluginName }) as Plugin;
+export default Object.assign(pluginInit, { pluginName, configSchema }) as Plugin;

@@ -98,17 +98,94 @@
     "plugins": {
       "type": "array",
       "items": {
-        "anyOf": [
-          {
-            "type": "object",
-            "properties": {
-              "use": {
-                "type": "string",
+        "type": "object",
+        "properties": {
+          "use": {
+            "anyOf": [
+              {
+                "const": "replace-messages"
+              },
+              {
                 "const": "keep-only-last-message"
               },
+              {
+                "const": "remove-telemetry-headers"
+              },
+              {
+                "const": "debug-request-messages"
+              },
+              {
+                "type": "string",
+                "description": "The name of the plugin or the path to the main file of the plugin"
+              }
+            ]
+          },
+          "configs": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "use"
+        ],
+        "if": {
+          "properties": {
+            "use": {
+              "const": "replace-messages"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "configs": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "model_regexp": {
+                        "type": "string"
+                      },
+                      "search": {
+                        "type": "string"
+                      },
+                      "replace": {
+                        "type": "string"
+                      },
+                      "regex": {
+                        "type": "string",
+                        "pattern": "^[gimsu]+$",
+                        "description": "the flags of regular expression. default: gi"
+                      }
+                    },
+                    "required": [
+                      "search",
+                      "replace"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "rules"
+              ]
+            }
+          }
+        },
+        "else": {
+          "if": {
+            "properties": {
+              "use": {
+                "const": "keep-only-last-message"
+              }
+            }
+          },
+          "then": {
+            "properties": {
               "configs": {
                 "type": "object",
-                "additionalProperties": true,
                 "properties": {
                   "flag": {
                     "type": "string",
@@ -116,62 +193,10 @@
                   }
                 }
               }
-            },
-            "required": [
-              "use"
-            ]
+            }
           },
-          {
-            "type": "object",
-            "properties": {
-              "use": {
-                "type": "string",
-                "const": "remove-telemetry-headers"
-              },
-              "configs": {
-                "type": "object",
-                "additionalProperties": true,
-                "properties": {}
-              }
-            },
-            "required": [
-              "use"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "use": {
-                "type": "string",
-                "const": "debug-request-messages"
-              },
-              "configs": {
-                "type": "object",
-                "additionalProperties": true,
-                "properties": {}
-              }
-            },
-            "required": [
-              "use"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "use": {
-                "type": "string",
-                "description": "The name of the plugin or the path to the main file of the plugin"
-              },
-              "configs": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "use"
-            ]
-          }
-        ]
+          "else": {}
+        }
       }
     },
     "router": {

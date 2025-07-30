@@ -9,7 +9,7 @@ import type { PluginFirstArg, PluginStateStorage } from "../../plugins/types.ts"
 import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.ts";
 import type { StorageManager } from "../../storage/index.ts";
 import { isHTTPS } from "../../utils/is-https.ts";
-import { callPlugins } from "../call-plugins.ts";
+import { callPlugins, type PluginResult } from "../call-plugins.ts";
 import { parseIncomingBody, type ParsedIncomingBody } from "./incoming-body.ts";
 import { printIncomingForProxy } from "./incoming.ts";
 import { updateHeadersToUpstream } from "./upstream-headers.ts";
@@ -68,7 +68,15 @@ export async function proxyReqToUpstream(
   const headers = new Headers(incomingHeaders);
   headers.set("Host", upstreamURL.host);
   updateHeadersToUpstream(headers, upstream, true);
-  await callPlugins(storage.plugins, "transformHeaders", { method, target: upstreamURL, headers, state });
+
+  let pluginResult: PluginResult;
+  pluginResult = await callPlugins(storage.plugins, "transformHeaders", {
+    method,
+    target: upstreamURL,
+    headers,
+    state,
+  });
+  if (pluginResult.response) return pluginResult.response;
 
   let writeResp: string | undefined;
   if (writeLogs) {
@@ -83,7 +91,9 @@ export async function proxyReqToUpstream(
       body: body.json,
       state,
     };
-    await callPlugins(storage.plugins, "transformJsonBody", args);
+    pluginResult = await callPlugins(storage.plugins, "transformJsonBody", args);
+    if (pluginResult.response) return pluginResult.response;
+
     body.json = args.body;
   }
 

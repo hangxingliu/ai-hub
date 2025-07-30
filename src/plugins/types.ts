@@ -1,44 +1,62 @@
 import { OpenAI } from "openai";
 import type { StorageManager } from "../storage/index.ts";
+import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
+
+export type PluginInternalArgs = {
+  kill: (statusCode?: number) => void;
+};
 
 export type PluginArgs<Method extends keyof PluginInstance> = Required<PluginInstance>[Method] extends (
-  ...args: infer Params
+  ...args: (infer Params)[]
 ) => any
-  ? Params
+  ? Omit<Params, keyof PluginInternalArgs>[]
   : never;
 
 export type PluginFirstArg<Method extends keyof PluginInstance> = Required<PluginInstance>[Method] extends (
-  ...args: infer Params
+  firstArg: infer Params,
+  ...args: any[]
 ) => any
-  ? Params[0]
+  ? Omit<Params, keyof PluginInternalArgs>
   : never;
 
 export type PluginStateStorage = Record<string, any>;
-export type PluginConfigs = Record<string, any>;
 
 type PromiseLike<T> = T | Promise<T>;
 type PromiseLikeOrVoid<T> = PromiseLike<void> | PromiseLike<T>;
 
-export type Plugin = PluginInitFn & { pluginName: string };
+export type Plugin<PluginConfigs = any> = PluginInitFn<PluginConfigs> & {
+  pluginName: string;
+  configSchema?: JSONSchema;
+};
 
-export type PluginInitFn = (args: { storage: StorageManager; configs: PluginConfigs }) => PromiseLike<PluginInstance>;
+export type PluginInitFn<PluginConfigs = Record<string, any>> = (args: {
+  storage: StorageManager;
+  configs: PluginConfigs;
+}) => PromiseLike<PluginInstance>;
 
 export type ResolvedPlugin = PluginInstance & { pluginName: string };
 
 export interface PluginInstance {
-  transformHeaders?: (args: {
-    readonly method: Uppercase<string>;
-    readonly target: URL;
-    readonly headers: Headers;
-    readonly state: PluginStateStorage;
-  }) => PromiseLike<void>;
+  /** a short message */
+  initialized?: string;
 
-  transformJsonBody?: (args: {
-    readonly method: Uppercase<string>;
-    readonly target: URL;
-    readonly state: PluginStateStorage;
-    body: Record<string, any>;
-  }) => PromiseLike<void>;
+  transformHeaders?: (
+    args: PluginInternalArgs & {
+      readonly method: Uppercase<string>;
+      readonly target: URL;
+      readonly headers: Headers;
+      readonly state: PluginStateStorage;
+    }
+  ) => PromiseLike<void>;
+
+  transformJsonBody?: (
+    args: PluginInternalArgs & {
+      readonly method: Uppercase<string>;
+      readonly target: URL;
+      readonly state: PluginStateStorage;
+      body: Record<string, any>;
+    }
+  ) => PromiseLike<void>;
 
   /** @todo not implemented */
   transformStreamChunk?: (args: {
