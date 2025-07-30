@@ -19,6 +19,7 @@ import { getErrorMessage } from "../../utils/error.ts";
 import { RESP_INTERNAL_ERROR, RESP_NOT_FOUND } from "./basic-responses.ts";
 import { formatSize } from "../../utils/format-size.ts";
 import { resolveUpstreamURL } from "./upstream-url.ts";
+import { createDecoderForContentEncoding } from "../../utils/content-encoding.ts";
 
 export async function prepareProxyReqToUpstream(req: Request): Promise<
   | {
@@ -110,17 +111,28 @@ export async function proxyReqToUpstream(
         agent: httpProxy.agent,
       },
       (upstreamRes) => {
-        let debugStream: WriteStream | undefined;
+        let debugStream: Writable | undefined;
+        let closeDebugStream: WriteStream | undefined;
+        const encoding = upstreamRes.headers["content-encoding"];
         if (writeResp) {
-          debugStream = createWriteStream(writeResp, { autoClose: true });
+          closeDebugStream = createWriteStream(writeResp, { autoClose: true });
+          debugStream = closeDebugStream;
           const prefix: string[] = [upstreamRes.url || ""];
           for (const [key, value] of Object.entries(upstreamRes.headers)) prefix.push(`${key}: ${value}`);
           debugStream.write(`${prefix.join("\n")}\n\n`);
+
+          const decoder = createDecoderForContentEncoding(encoding);
+          if (decoder) {
+            decoder.transform.pipe(debugStream);
+            debugStream = decoder.transform;
+          }
+          // if(encoding)
         }
 
         const contentType = parseContentType(upstreamRes.headers["content-type"]);
         let log = `<- ${upstreamRes.statusCode}`;
         if (contentType.raw) log += ` "${contentType.raw}"`;
+        if (encoding) log += ` ${COLORS_ALL.BROWN}"${encoding}"${COLORS_ALL.RESET}`;
         log += ` ${COLORS_ALL.DIM}+${tick().str}${COLORS_ALL.RESET}`;
         console.log(log);
 
@@ -149,8 +161,8 @@ export async function proxyReqToUpstream(
 
           upstreamRes.off("data", onData);
           controller?.close();
-          if (debugStream) {
-            debugStream.close();
+          if (closeDebugStream) {
+            closeDebugStream.close();
             const relPath = relative(process.cwd(), writeResp!);
             console.log(`${COLORS_ALL.DIM}dump to "${relPath}"${COLORS_ALL.RESET}`);
           }
