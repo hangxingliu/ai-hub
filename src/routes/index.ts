@@ -4,11 +4,14 @@ import { printIncomingForProxy } from "../services/base/incoming.ts";
 import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.ts";
 import { prepareProxyReqToUpstream, proxyReqToUpstream } from "../services/base/proxy.ts";
 import { RESP_NOT_FOUND } from "../services/base/basic-responses.ts";
+import type { PluginStateStorage } from "../plugins/types.ts";
 
 export function createFallbackRoute(storage: StorageManager) {
   return async function fallbackRoute(this: Server, req: Request, server: Server): Promise<Response> {
-    const prepare = await prepareProxyReqToUpstream(req);
-    if ('resp' in prepare) return prepare.resp;
+    const state: PluginStateStorage = {};
+
+    const prepare = await prepareProxyReqToUpstream(storage, state, req);
+    if ("resp" in prepare) return prepare.resp;
 
     let upstream: ParsedAIUpstream | undefined;
     const { body, method, url } = prepare;
@@ -22,8 +25,8 @@ export function createFallbackRoute(storage: StorageManager) {
       }
     }
 
-    url.pathname = url.pathname.replace(/^\/v1\//, '/');
-    return await proxyReqToUpstream(storage, upstream, method, url, req.headers, body);
+    url.pathname = url.pathname.replace(/^\/v1\//, "/");
+    return await proxyReqToUpstream(storage, state, upstream, method, url, req.headers, body);
 
     // ==================
     // we can't use `fetch` here. because bun blocks and waits for all response from the server.

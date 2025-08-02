@@ -21,7 +21,11 @@ import { formatSize } from "../../utils/format-size.ts";
 import { resolveUpstreamURL } from "./upstream-url.ts";
 import { createDecoderForContentEncoding } from "../../utils/content-encoding.ts";
 
-export async function prepareProxyReqToUpstream(req: Request): Promise<
+export async function prepareProxyReqToUpstream(
+  storage: StorageManager,
+  state: PluginStateStorage,
+  req: Request
+): Promise<
   | {
       resp: Response;
     }
@@ -49,11 +53,24 @@ export async function prepareProxyReqToUpstream(req: Request): Promise<
     printIncomingForProxy("fallback", method, url, getErrorMessage(error));
     return { resp: RESP_INTERNAL_ERROR };
   }
+
+  const args: PluginFirstArg<"transformModelId"> = {
+    method,
+    target: url,
+    headers: req.headers,
+    state,
+    modelId: body.modelId,
+  };
+  const pluginResult = await callPlugins(storage.plugins, "transformModelId", args);
+  if (pluginResult.response) return { resp: pluginResult.response };
+  body.modelId = args.modelId;
+
   return { url, method, body };
 }
 
 export async function proxyReqToUpstream(
   storage: StorageManager,
+  state: PluginStateStorage,
   upstream: ParsedAIUpstream,
   method: Uppercase<string>,
   incomingURL: URL,
@@ -61,7 +78,6 @@ export async function proxyReqToUpstream(
   body: ParsedIncomingBody
 ) {
   const writeLogs = !!storage.config.dump_request_logs;
-  const state: PluginStateStorage = {};
   const upstreamURL = resolveUpstreamURL(upstream.endpoint, incomingURL.pathname);
   upstreamURL.search = incomingURL.search;
 
@@ -78,12 +94,6 @@ export async function proxyReqToUpstream(
   });
   if (pluginResult.response) return pluginResult.response;
 
-  let writeResp: string | undefined;
-  if (writeLogs) {
-    const target = storage.writeLogs("messages", body, false);
-    if (target?.filePath) writeResp = target.filePath.replace(/\.([\w-]+)$/, "-resp.$1");
-  }
-
   if (body.json) {
     const args: PluginFirstArg<"transformJsonBody"> = {
       method,
@@ -96,6 +106,12 @@ export async function proxyReqToUpstream(
     if (pluginResult.response) return pluginResult.response;
 
     body.json = args.body;
+  }
+
+  let writeResp: string | undefined;
+  if (writeLogs) {
+    const target = storage.writeLogs("messages", body, false);
+    if (target?.filePath) writeResp = target.filePath.replace(/\.([\w-]+)$/, "-resp.$1");
   }
 
   const httpProxy = storage.proxyAgents.get(upstream);

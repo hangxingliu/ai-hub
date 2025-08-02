@@ -40,6 +40,19 @@ export interface PluginInstance {
   /** a short message */
   initialized?: string;
 
+  transformModelId?: (
+    args: PluginInternalArgs & {
+      readonly method: Uppercase<string>;
+      /** incoming URL */
+      readonly target: URL;
+      /** incoming headers */
+      readonly headers: Headers;
+      readonly state: PluginStateStorage;
+      /** default model id */
+      modelId: string | undefined;
+    }
+  ) => PromiseLike<void>;
+
   transformHeaders?: (
     args: PluginInternalArgs & {
       readonly method: Uppercase<string>;

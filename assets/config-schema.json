@@ -115,6 +115,9 @@
                 "const": "disable-models"
               },
               {
+                "const": "rewrite-model-id"
+              },
+              {
                 "const": "debug-request-messages"
               },
               {
@@ -226,7 +229,45 @@
                 }
               }
             },
-            "else": {}
+            "else": {
+              "if": {
+                "properties": {
+                  "use": {
+                    "const": "rewrite-model-id"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "configs": {
+                    "type": "object",
+                    "properties": {
+                      "rules": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "match": {
+                              "type": "string",
+                              "description": "a regular expression for matching the model name (full match)"
+                            },
+                            "replace": {
+                              "type": "string",
+                              "description": "replaced model name, you can use $1, $2, $3, ... to represent captured groups"
+                            }
+                          },
+                          "required": [
+                            "match",
+                            "replace"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "else": {}
+            }
           }
         }
       }

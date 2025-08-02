@@ -30,7 +30,7 @@ const pluginInit: PluginInitFn<Configs> = ({ configs }) => {
   if (!Number.isSafeInteger(statusCode) || statusCode <= 0) statusCode = 404;
 
   return {
-    initialized: `${patterns.length} patterns`,
+    initialized: `${patterns.length} pattern(s)`,
 
     transformJsonBody(args) {
       if (!args.modelId) return;

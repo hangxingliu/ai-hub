@@ -38,7 +38,7 @@ type Rule = Configs["rules"][0];
 const pluginInit: PluginInitFn<Configs> = ({ configs }) => {
   const rules = configs.rules.map((it) => ({ ...it, re: buildRegExp(it) }));
   return {
-    initialized: `${rules.length} replace rules`,
+    initialized: `${rules.length} replace rule(s)`,
 
     transformJsonBody(args) {
       const body = args.body;
