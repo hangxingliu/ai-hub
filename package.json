@@ -1,5 +1,6 @@
 {
   "name": "@hangxingliu/ai-hub",
+  "version": "0.0.1",
   "description": "Connecting multiple AI service providers with a unified entry point",
   "packageManager": "bun@1.2.19",
   "type": "module",

@@ -1,0 +1,9 @@
+assets
+node_modules
+storage
+
+.aider*
+.env
+.env*
+config.yaml
+*.lock

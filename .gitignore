@@ -1,6 +1,8 @@
 # -*- mode: gitignore; -*-
+/.aider*
 /config.yaml
 /docs/__private
+!/.aiderignore
 
 storage/logs
 storage/*.db
