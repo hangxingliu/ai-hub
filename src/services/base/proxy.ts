@@ -1,4 +1,4 @@
-import { Readable, Writable } from "stream";
+import { Readable, Transform } from "stream";
 import { request as requestHTTP } from "http";
 import { request as requestHTTPS } from "https";
 import { WriteStream, createWriteStream } from "fs";
@@ -122,12 +122,11 @@ export async function proxyReqToUpstream(
         agent: httpProxy.agent,
       },
       (upstreamRes) => {
-        let debugStream: Writable | undefined;
-        let closeDebugStream: WriteStream | undefined;
+        let debugStream: WriteStream | undefined;
+        let debugDecoder: Transform | undefined;
         const encoding = upstreamRes.headers["content-encoding"];
         if (writeResp) {
-          closeDebugStream = createWriteStream(writeResp, { autoClose: true });
-          debugStream = closeDebugStream;
+          debugStream = createWriteStream(writeResp, { autoClose: true });
           const prefix: string[] = [upstreamRes.url || ""];
           for (const [key, value] of Object.entries(upstreamRes.headers)) prefix.push(`${key}: ${value}`);
           debugStream.write(`${prefix.join("\n")}\n\n`);
@@ -135,9 +134,8 @@ export async function proxyReqToUpstream(
           const decoder = createDecoderForContentEncoding(encoding);
           if (decoder) {
             decoder.transform.pipe(debugStream);
-            debugStream = decoder.transform;
+            debugDecoder = decoder.transform;
           }
-          // if(encoding)
         }
 
         const contentType = parseContentType(upstreamRes.headers["content-type"]);
@@ -156,7 +154,7 @@ export async function proxyReqToUpstream(
           },
         });
         const onData = (chunk: Buffer) => {
-          if (debugStream) debugStream.write(chunk);
+          if (debugStream) (debugDecoder || debugStream).write(chunk);
           // process.stderr.write(chunk.toString("utf-8"));
           controller?.enqueue(chunk);
           totalSizes += chunk.length;
@@ -172,8 +170,11 @@ export async function proxyReqToUpstream(
 
           upstreamRes.off("data", onData);
           controller?.close();
-          if (closeDebugStream) {
-            closeDebugStream.close();
+          if (debugStream) {
+            const closeFile = debugStream.end.bind(debugStream);
+            if (debugDecoder) debugDecoder.end(closeFile);
+            else closeFile();
+            debugStream = undefined;
             const relPath = relative(process.cwd(), writeResp!);
             console.log(`${COLORS_ALL.DIM}dump to "${relPath}"${COLORS_ALL.RESET}`);
           }

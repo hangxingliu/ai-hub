@@ -11,3 +11,11 @@ export type OpenAIChatParams = OpenAI.ChatCompletionCreateParams;
 export type OpenAIChatMessages = OpenAI.ChatCompletionMessageParam[];
 
 export type OpenAIChatCompletionChunk = OpenAI.ChatCompletionChunk;
+
+export type ModelMetadata = {
+  maxTokens: number;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  costPerMillionInputTokens: number;
+  costPerMillionOutputTokens: number;
+};
