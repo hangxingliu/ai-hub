@@ -17,6 +17,7 @@ import { parseSizeString } from "./utils/parse-size.ts";
 import { ConfigFileWatcher } from "./config/watcher.ts";
 import { COLORS_ALL } from "./utils/colors/index.ts";
 import { createV1AudioRoutes } from "./routes/v1-audio.ts";
+import { createV1ChatRoutes } from "./routes/v1-chat.ts";
 
 const { values: options, positionals: args } = parseArgs({
   options: {
@@ -48,6 +49,9 @@ async function startServer() {
 
   const listen = getBunServerListenOptions(config);
 
+  const v1AudioRoutes = createV1AudioRoutes(storage);
+  const v1ChatRoutes = createV1ChatRoutes(storage);
+
   server = Bun.serve({
     ...listen.options,
     development: false,
@@ -56,6 +60,8 @@ async function startServer() {
     routes: {
       "/": createHomePageRoute(storage),
       "/favicon.ico": Bun.file(FAV_ICON_PATH),
+      ...v1AudioRoutes,
+      ...v1ChatRoutes,
       "/v1/models": {
         GET: createV1ModelsRoute(storage),
       },
