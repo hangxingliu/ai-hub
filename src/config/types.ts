@@ -1,4 +1,4 @@
-export type AIUpstreamType = "v1" | "anthropic" | "google" | "ollama" | "openai";
+export type AIUpstreamType = "v1" | "xai" | "anthropic" | "google" | "ollama" | "openai";
 
 export interface AIUpstream {
   name: string;

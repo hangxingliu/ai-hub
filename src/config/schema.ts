@@ -3,7 +3,7 @@ import type { JSONSchema } from "../utils/json-schema/schema-types.js";
 
 const { isStr, isStrEnum, isArr, isPort, isInt, isBool } = JSONSchemaBuilder;
 
-export const aiUpstreamTypeSchemaEnum = ["v1", "anthropic", "google", "ollama", "openai"] as const;
+export const aiUpstreamTypeSchemaEnum = ["v1", "xai", "anthropic", "google", "ollama", "openai"] as const;
 
 export const aiUpstreamSchema = {
   type: "object",

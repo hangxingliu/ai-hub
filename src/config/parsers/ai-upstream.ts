@@ -45,7 +45,12 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
 
   const hash = createAIUpstreamHash(upstream);
   const endpoint = new URL(upstream.endpoint);
-  const type = upstream.type || "v1";
+  let type = upstream.type;
+  if (!type) {
+    if (endpoint.hostname === "api.openai.com") type = "openai";
+    else if (endpoint.hostname === "api.x.ai") type = "xai";
+    else type = "v1";
+  }
 
   const default_headers: ParsedAIUpstream["default_headers"] = [];
   if (upstream.default_headers)

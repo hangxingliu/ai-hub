@@ -82,6 +82,7 @@
             "type": "string",
             "enum": [
               "v1",
+              "xai",
               "anthropic",
               "google",
               "ollama",
