@@ -5,20 +5,12 @@ export interface AIUpstream {
   endpoint: string;
   default_api_key?: string;
   override_api_key?: string;
+  fallback?: boolean;
   proxy?: string;
   only_public_models?: boolean;
   type?: AIUpstreamType;
   api_version?: string;
   default_headers?: Record<string, string>;
-}
-
-export interface AIRequestRoute {
-  name: string;
-}
-
-export interface AIRequestRouter {
-  default: string;
-  routes: AIRequestRoute[];
 }
 
 export interface Storage {
@@ -38,10 +30,10 @@ export interface Config {
   respect_system_proxy?: boolean;
   override_model_owned_by?: string;
   dump_request_logs?: boolean;
+  max_request_body_size?: string | number;
   //
   storage: Storage;
   //
   upstreams: AIUpstream[];
-  router: AIRequestRouter;
   plugins: PluginInConfig[];
 }

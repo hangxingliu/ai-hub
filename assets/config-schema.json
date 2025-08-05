@@ -29,6 +29,19 @@
       "default": false,
       "description": "Write request payload and response into log files"
     },
+    "max_request_body_size": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "pattern": "\\d+(?:\\.\\d+)?(?:[kmgtKMGT][iI]?[bB]?)"
+        }
+      ],
+      "default": "128MiB",
+      "description": "a size string (example: 12m, 128mib) or a int (default unit: bytes)"
+    },
     "storage": {
       "type": "object",
       "properties": {
@@ -60,6 +73,10 @@
           },
           "proxy": {
             "type": "string"
+          },
+          "fallback": {
+            "type": "boolean",
+            "description": "If enable this flag, the server will forward all unknown request to this upstream"
           },
           "type": {
             "type": "string",
@@ -103,7 +120,10 @@
           "use": {
             "anyOf": [
               {
-                "const": "replace-messages"
+                "const": "debug-request-messages"
+              },
+              {
+                "const": "disable-models"
               },
               {
                 "const": "keep-only-last-message"
@@ -112,13 +132,10 @@
                 "const": "remove-telemetry-headers"
               },
               {
-                "const": "disable-models"
+                "const": "replace-messages"
               },
               {
                 "const": "rewrite-model-id"
-              },
-              {
-                "const": "debug-request-messages"
               },
               {
                 "type": "string",
@@ -137,7 +154,7 @@
         "if": {
           "properties": {
             "use": {
-              "const": "replace-messages"
+              "const": "disable-models"
             }
           }
         },
@@ -145,38 +162,19 @@
           "properties": {
             "configs": {
               "type": "object",
-              "additionalProperties": true,
               "properties": {
-                "rules": {
+                "patterns": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "model_regexp": {
-                        "type": "string"
-                      },
-                      "search": {
-                        "type": "string"
-                      },
-                      "replace": {
-                        "type": "string"
-                      },
-                      "regex": {
-                        "type": "string",
-                        "pattern": "^[gimsu]+$",
-                        "description": "the flags of regular expression. default: gi"
-                      }
-                    },
-                    "required": [
-                      "search",
-                      "replace"
-                    ]
+                    "type": "string",
+                    "description": "a regualr expression for matching model name"
                   }
+                },
+                "status_code": {
+                  "type": "integer",
+                  "default": 404
                 }
-              },
-              "required": [
-                "rules"
-              ]
+              }
             }
           }
         },
@@ -205,7 +203,7 @@
             "if": {
               "properties": {
                 "use": {
-                  "const": "disable-models"
+                  "const": "replace-messages"
                 }
               }
             },
@@ -213,19 +211,38 @@
               "properties": {
                 "configs": {
                   "type": "object",
+                  "additionalProperties": true,
                   "properties": {
-                    "patterns": {
+                    "rules": {
                       "type": "array",
                       "items": {
-                        "type": "string",
-                        "description": "a regualr expression for matching model name"
+                        "type": "object",
+                        "properties": {
+                          "model_regexp": {
+                            "type": "string"
+                          },
+                          "search": {
+                            "type": "string"
+                          },
+                          "replace": {
+                            "type": "string"
+                          },
+                          "regex": {
+                            "type": "string",
+                            "pattern": "^[gimsu]+$",
+                            "description": "the flags of regular expression. default: gi"
+                          }
+                        },
+                        "required": [
+                          "search",
+                          "replace"
+                        ]
                       }
-                    },
-                    "status_code": {
-                      "type": "integer",
-                      "default": 404
                     }
-                  }
+                  },
+                  "required": [
+                    "rules"
+                  ]
                 }
               }
             },
@@ -271,35 +288,9 @@
           }
         }
       }
-    },
-    "router": {
-      "type": "object",
-      "properties": {
-        "default": {
-          "type": "string"
-        },
-        "routes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name"
-            ]
-          }
-        }
-      },
-      "required": [
-        "default"
-      ]
     }
   },
   "required": [
-    "upstreams",
-    "router"
+    "upstreams"
   ]
 }

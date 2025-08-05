@@ -1,6 +1,7 @@
 import { OpenAI } from "openai";
 import type { StorageManager } from "../storage/index.ts";
 import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
+import type { ParsedFormItem } from "../services/base/incoming-body-form-data.ts";
 
 export type PluginInternalArgs = {
   kill: (statusCode?: number) => void;
@@ -69,6 +70,16 @@ export interface PluginInstance {
       readonly state: PluginStateStorage;
       readonly modelId?: string;
       body: Record<string, any>;
+    }
+  ) => PromiseLike<void>;
+
+  transformFormBody?: (
+    args: PluginInternalArgs & {
+      readonly method: Uppercase<string>;
+      readonly target: URL;
+      readonly state: PluginStateStorage;
+      readonly modelId?: string;
+      readonly body: ParsedFormItem[];
     }
   ) => PromiseLike<void>;
 

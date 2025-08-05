@@ -1,21 +1,20 @@
 //@ts-check
-import { Glob } from "bun";
-import { basename, resolve } from "path";
-import { writeFileSync } from "fs";
+import { writeFileSync, globSync } from "node:fs";
+import { basename, resolve } from "node:path";
 import { configSchema } from "./schema.js";
 import type { JSONSchema } from "../utils/json-schema/schema-types.js";
 import type { Plugin } from "../plugins/types.js";
 
 const targetFile = resolve(import.meta.dirname, "../../assets/config-schema.json");
-const builtinPlugins = new Glob("*.ts").scan({
-  cwd: resolve(import.meta.dirname, "../plugins/builtin"),
-  absolute: true,
-});
+const cwd = resolve(import.meta.dirname, "../plugins/builtin");
+const builtinPlugins = globSync("*.ts", { cwd }).sort();
 
 const conds: { cond: string; schema: JSONSchema }[] = [];
 const anyNames: string[] = [];
-for await (const pluginFile of builtinPlugins) {
-  const name = basename(pluginFile);
+for (const pluginFileRelative of builtinPlugins) {
+  const pluginFile = resolve(cwd, pluginFileRelative);
+
+  const name = basename(pluginFileRelative);
   if (name.startsWith(".") || name.startsWith("__")) continue;
 
   const mod = (await import(pluginFile)).default as Plugin;

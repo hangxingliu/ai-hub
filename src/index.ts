@@ -13,6 +13,10 @@ import { initPlugins } from "./plugins/init.ts";
 import { DEFAULT_PLUGINS } from "./plugins/index.ts";
 //
 import FAV_ICON_PATH from "../assets/favicon.ico";
+import { parseSizeString } from "./utils/parse-size.ts";
+import { ConfigFileWatcher } from "./config/watcher.ts";
+import { COLORS_ALL } from "./utils/colors/index.ts";
+import { createV1AudioRoutes } from "./routes/v1-audio.ts";
 
 const { values: options, positionals: args } = parseArgs({
   options: {
@@ -24,29 +28,59 @@ const { values: options, positionals: args } = parseArgs({
 if (!options.config) throw new Error(`Please provide the required flag "--config"`);
 
 const config = await loadConfigFile(options.config);
-const listen = getBunServerListenOptions(config);
+const configWatcher = new ConfigFileWatcher(options.config);
 
-const storage = new StorageManager(config);
-await initPlugins(storage, Array.isArray(config.plugins) ? config.plugins : [...DEFAULT_PLUGINS]);
+let storage = new StorageManager(config);
+let server: Bun.Server | undefined;
+let startingServer: Promise<void> | undefined;
 
-for (const upstream of storage.upstreams) await getOrUpdateModels(storage, upstream);
+async function startServer() {
+  if (server) {
+    console.log(`${COLORS_ALL.GREEN_DARK}Reloading the http server ...${COLORS_ALL.RESET}`);
+    await server.stop(true);
+  }
 
-const server = Bun.serve({
-  ...listen.options,
-  development: false,
-  fetch: createFallbackRoute(storage),
-  routes: {
-    "/": createHomePageRoute(storage),
-    "/favicon.ico": Bun.file(FAV_ICON_PATH),
-    "/v1/models": {
-      GET: createV1ModelsRoute(storage),
+  await initPlugins(storage, Array.isArray(config.plugins) ? config.plugins : [...DEFAULT_PLUGINS]);
+  for (const upstream of storage.upstreams) {
+    const { models, from } = await getOrUpdateModels(storage, upstream);
+    console.log(`Loaded ${models.data.length} ${upstream.name} models from ${from}`);
+  }
+
+  const listen = getBunServerListenOptions(config);
+
+  server = Bun.serve({
+    ...listen.options,
+    development: false,
+    fetch: createFallbackRoute(storage),
+    maxRequestBodySize: parseSizeString(config.max_request_body_size || "128MiB"),
+    routes: {
+      "/": createHomePageRoute(storage),
+      "/favicon.ico": Bun.file(FAV_ICON_PATH),
+      "/v1/models": {
+        GET: createV1ModelsRoute(storage),
+      },
+      // gemni api:
+      // https://ai.google.dev/api/models#models_get-SHELL
+      "/v1beta/models": new Response("WIP", { status: 404 }),
     },
-  },
+  });
+  console.log(`The AI hub server is listening on ${server.url}`);
+}
+
+startServer();
+configWatcher.listenOnFileChanged(async (newConfig) => {
+  if (startingServer) await startingServer;
+
+  storage = new StorageManager(newConfig, storage);
+  startingServer = startServer();
+  startingServer = undefined;
 });
-console.log(`The AI hub server is listening on ${server.url}`);
 
 BeforeExit.addEventListener(async () => {
-  console.log(`stoping HTTP server ...`);
-  await server.stop(true);
+  if (server) {
+    console.log(`Stoping HTTP server ...`);
+    await server.stop(true);
+  }
+  configWatcher.close();
   storage.close();
 });

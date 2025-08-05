@@ -1,4 +1,4 @@
-import { SHA256 } from "bun";
+import { sha256hex } from "../../utils/sha256.ts";
 import type { AIUpstream, AIUpstreamType } from "../types.ts";
 import type { Envsubst } from "../../utils/envsubst.ts";
 
@@ -10,6 +10,7 @@ export type ParsedAIUpstream = {
   //
   default_api_key?: string;
   override_api_key?: string;
+  fallback: boolean;
   proxy?: string;
   only_public_models: boolean;
   type: AIUpstreamType;
@@ -32,7 +33,7 @@ export function createAIUpstreamHash(upstream: AIUpstream) {
     ];
   }
 
-  return SHA256.hash(JSON.stringify(hashInput), "hex");
+  return sha256hex(JSON.stringify(hashInput));
 }
 
 export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst): ParsedAIUpstream {
@@ -64,6 +65,7 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
     endpoint,
     default_api_key: upstream.default_api_key,
     override_api_key: upstream.override_api_key,
+    fallback: upstream.fallback || false,
     api_version: upstream.api_version,
     proxy: upstream.proxy,
     only_public_models: upstream.only_public_models || false,

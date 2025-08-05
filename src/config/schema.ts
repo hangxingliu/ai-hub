@@ -1,7 +1,7 @@
 import { JSONSchemaBuilder } from "../utils/json-schema/schema-build.ts";
 import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
 
-const { isStr, isStrEnum, isArr, isPort, isBool } = JSONSchemaBuilder;
+const { isStr, isStrEnum, isArr, isPort, isInt, isBool } = JSONSchemaBuilder;
 
 export const aiUpstreamTypeSchemaEnum = ["v1", "anthropic", "google", "ollama", "openai"] as const;
 
@@ -13,6 +13,7 @@ export const aiUpstreamSchema = {
     default_api_key: isStr(),
     override_api_key: isStr(),
     proxy: isStr(),
+    fallback: isBool("If enable this flag, the server will forward all unknown request to this upstream"),
     type: isStrEnum(aiUpstreamTypeSchemaEnum, {
       default: "v1",
       description:
@@ -29,21 +30,6 @@ export const aiUpstreamSchema = {
   required: ["name", "endpoint"],
 } satisfies JSONSchema;
 
-export const aiRequestRouteSchema = {
-  type: "object",
-  properties: { name: isStr() },
-  required: ["name"],
-} satisfies JSONSchema;
-
-export const aiRequestRouterSchema = {
-  type: "object",
-  properties: {
-    default: isStr(),
-    routes: isArr(aiRequestRouteSchema),
-  },
-  required: ["default"],
-} satisfies JSONSchema;
-
 export const storageSchema = {
   type: "object",
   properties: { baseDir: isStr({ default: "./storage" }) },
@@ -55,9 +41,9 @@ export const pluginSchema = {
   properties: {
     use: isStr("The name of the plugin or the path to the main file of the plugin"),
     configs: {
-      type: 'object',
+      type: "object",
       additionalProperties: true,
-    }
+    },
   },
   required: ["use"],
 } satisfies JSONSchema;
@@ -75,12 +61,16 @@ export const configSchema = {
     ),
     override_model_owned_by: isStr('Override "owned_by" in model list response'),
     dump_request_logs: isBool(false, "Write request payload and response into log files"),
+    max_request_body_size: {
+      oneOf: [isInt(), isStr({ pattern: "\\d+(?:\\.\\d+)?(?:[kmgtKMGT][iI]?[bB]?)" })],
+      default: "128MiB",
+      description: "a size string (example: 12m, 128mib) or a int (default unit: bytes)",
+    },
     //
     storage: storageSchema,
     //
     upstreams: isArr(aiUpstreamSchema),
     plugins: isArr(pluginSchema),
-    router: aiRequestRouterSchema,
   },
-  required: ["upstreams", "router"],
+  required: ["upstreams"],
 } satisfies JSONSchema;
