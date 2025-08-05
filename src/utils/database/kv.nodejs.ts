@@ -21,7 +21,7 @@ export type NodejsSQLiteKVConfig = {
 };
 
 /**
- * @version 2025-07-26
+ * @version 2025-08-05
  */
 export class NodejsSQLiteKV<Values extends { [key: string]: any }> {
   readonly id: string;
@@ -122,8 +122,8 @@ export class NodejsSQLiteKV<Values extends { [key: string]: any }> {
     compression ??= this.config.compression;
     ttl ??= this.config.defaultTTL;
 
-    if (serialization) flags = KVFlag.COMPRESSED;
-    if (compression) flags = KVFlag.COMPRESSED;
+    if (serialization) flags = KVFlag.SERIALIZED;
+    if (compression) flags |= KVFlag.COMPRESSED;
 
     const now = Date.now();
     let expires: number | null = null;

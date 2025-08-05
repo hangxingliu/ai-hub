@@ -119,8 +119,8 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
     compression ??= this.config.compression;
     ttl ??= this.config.defaultTTL;
 
-    if (serialization) flags = KVFlag.COMPRESSED;
-    if (compression) flags = KVFlag.COMPRESSED;
+    if (serialization) flags = KVFlag.SERIALIZED;
+    if (compression) flags |= KVFlag.COMPRESSED;
 
     const now = Date.now();
     let expires: number | null = null;
