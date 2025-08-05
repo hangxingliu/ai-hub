@@ -1,6 +1,6 @@
-import type { Plugin, PluginInitFn } from "../types.ts";
-import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
-import type { TypeFromJSONSchema } from "../../utils/json-schema/types.ts";
+import type { Plugin, PluginInitFn } from "../types.js";
+import type { JSONSchema } from "../../utils/json-schema/schema-types.js";
+import type { TypeFromJSONSchema } from "../../utils/json-schema/types.js";
 
 const pluginName = "remove-telemetry-headers";
 const configSchema = {

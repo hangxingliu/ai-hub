@@ -1,6 +1,6 @@
-import { printIncoming } from "../services/base/incoming-print.ts";
-import { updateModelsFromUpstream } from "../services/list-model.ts";
-import type { StorageManager } from "../storage/index.ts";
+import { printIncoming } from "../services/base/incoming-print.js";
+import { updateModelsFromUpstream } from "../services/list-model.js";
+import type { StorageManager } from "../storage/index.js";
 
 export function createV1ModelsRoute(storage: StorageManager) {
   const MIN_INTERVAL = 30 * 60 * 1000;

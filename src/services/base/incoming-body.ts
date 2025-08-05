@@ -1,6 +1,6 @@
-import type { ParsedContentType } from "../../utils/http-headers.ts";
-import { getErrorMessage } from "../../utils/error.ts";
-import { parseIncomingFormData, type ParsedFormItem } from "./incoming-body-form-data.ts";
+import type { ParsedContentType } from "../../utils/http-headers.js";
+import { getErrorMessage } from "../../utils/error.js";
+import { parseIncomingFormData, type ParsedFormItem } from "./incoming-body-form-data.js";
 
 export function parseIncomingModelId(body: unknown) {
   if (body && typeof body === "object") {

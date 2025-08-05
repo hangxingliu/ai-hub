@@ -1,6 +1,6 @@
 import { type FSWatcher, watch } from "node:fs";
-import { type LoadedConfig, loadConfigFile } from "./loader.ts";
-import { COLORS_ALL } from "../utils/colors/index.ts";
+import { type LoadedConfig, loadConfigFile } from "./loader.js";
+import { COLORS_ALL } from "../utils/colors/index.js";
 import { relative } from "node:path";
 
 /**

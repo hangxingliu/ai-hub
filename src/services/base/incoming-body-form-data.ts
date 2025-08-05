@@ -5,10 +5,10 @@ import { createWriteStream, existsSync, statSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import Busboy, { type BusboyHeaders } from "@fastify/busboy";
 
-import { Tick } from "../../utils/tick.ts";
-import { getErrorMessage } from "../../utils/error.ts";
-import { COLORS_ALL } from "../../utils/colors/index.ts";
-import { formatDate } from "../../utils/format-date.ts";
+import { Tick } from "../../utils/tick.js";
+import { getErrorMessage } from "../../utils/error.js";
+import { COLORS_ALL } from "../../utils/colors/index.js";
+import { formatDate } from "../../utils/format-date.js";
 
 const { DIM, RESET } = COLORS_ALL;
 

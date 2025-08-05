@@ -1,10 +1,10 @@
 import type { Server } from "bun";
-import type { StorageManager } from "../storage/index.ts";
-import { printIncomingForProxy } from "../services/base/incoming-print.ts";
-import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.ts";
-import { prepareProxyReqToUpstream, proxyReqToUpstream } from "../services/base/proxy.ts";
-import { RESP_NOT_FOUND, RESP_WIP } from "../services/base/basic-responses.ts";
-import type { PluginStateStorage } from "../plugins/types.ts";
+import type { StorageManager } from "../storage/index.js";
+import { printIncomingForProxy } from "../services/base/incoming-print.js";
+import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.js";
+import { prepareProxyReqToUpstream, proxyReqToUpstream } from "../services/base/proxy.js";
+import { RESP_NOT_FOUND, RESP_WIP } from "../services/base/basic-responses.js";
+import type { PluginStateStorage } from "../plugins/types.js";
 
 /**
  * @see https://platform.openai.com/docs/api-reference/chat/create

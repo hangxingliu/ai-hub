@@ -1,4 +1,4 @@
-import type { OpenAIModelsResult } from "../api-types.ts";
+import type { OpenAIModelsResult } from "../api-types.js";
 
 export type KVs = {
   last_models_fetch: number;

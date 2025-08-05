@@ -1,6 +1,6 @@
-import { sha256hex } from "../../utils/sha256.ts";
-import type { AIUpstream, AIUpstreamType } from "../types.ts";
-import type { Envsubst } from "../../utils/envsubst.ts";
+import { sha256hex } from "../../utils/sha256.js";
+import type { AIUpstream, AIUpstreamType } from "../types.js";
+import type { Envsubst } from "../../utils/envsubst.js";
 
 export type ParsedAIUpstream = {
   hash: string;

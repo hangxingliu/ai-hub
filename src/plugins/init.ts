@@ -1,12 +1,12 @@
 import { resolve } from "node:path";
 
-import type { PluginInConfig } from "../config/types.ts";
-import type { StorageManager } from "../storage/index.ts";
-import { COLORS_ALL } from "../utils/colors/index.ts";
-import { Tick } from "../utils/tick.ts";
-import { BUILTIN_PLUGINS } from "./index.ts";
-import { getErrorMessage } from "../utils/error.ts";
-import { validateSchema } from "../utils/json-schema/validator.ts";
+import type { PluginInConfig } from "../config/types.js";
+import type { StorageManager } from "../storage/index.js";
+import { COLORS_ALL } from "../utils/colors/index.js";
+import { Tick } from "../utils/tick.js";
+import { BUILTIN_PLUGINS } from "./index.js";
+import { getErrorMessage } from "../utils/error.js";
+import { validateSchema } from "../utils/json-schema/validator.js";
 
 export async function initPlugins(storage: StorageManager, plugins: PluginInConfig[]) {
   const loaded = new Set<string>();

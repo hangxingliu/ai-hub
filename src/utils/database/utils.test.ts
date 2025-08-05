@@ -1,5 +1,5 @@
 import Database from "bun:sqlite";
-import { escapeId } from "./utils.ts";
+import { escapeId } from "./utils.js";
 
 [
   //

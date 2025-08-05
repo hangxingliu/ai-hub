@@ -1,11 +1,11 @@
-import type { Plugin } from "./types.ts";
+import type { Plugin } from "./types.js";
 
-import removeTelemetryHeaders from "./builtin/remove-telemetry-headers.ts";
-import debugRequestMessages from "./builtin/debug-request-messages.ts";
-import keepOnlyLastMessage from "./builtin/keep-only-last-message.ts";
-import replaceMessages from "./builtin/replace-messages.ts";
-import disableModels from "./builtin/disable-models.ts";
-import rewriteModelId from "./builtin/rewrite-model-id.ts";
+import removeTelemetryHeaders from "./builtin/remove-telemetry-headers.js";
+import debugRequestMessages from "./builtin/debug-request-messages.js";
+import keepOnlyLastMessage from "./builtin/keep-only-last-message.js";
+import replaceMessages from "./builtin/replace-messages.js";
+import disableModels from "./builtin/disable-models.js";
+import rewriteModelId from "./builtin/rewrite-model-id.js";
 
 export const DEFAULT_PLUGINS: ReadonlyArray<{ use: string }> = [
   { use: removeTelemetryHeaders.pluginName },

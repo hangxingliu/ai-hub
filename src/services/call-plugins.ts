@@ -1,5 +1,5 @@
-import type { PluginInstance, PluginArgs, ResolvedPlugin, PluginInternalArgs } from "../plugins/types.ts";
-import { getErrorMessage } from "../utils/error.ts";
+import type { PluginInstance, PluginArgs, ResolvedPlugin, PluginInternalArgs } from "../plugins/types.js";
+import { getErrorMessage } from "../utils/error.js";
 
 export type PluginResult = { response?: Response };
 

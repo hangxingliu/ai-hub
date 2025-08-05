@@ -1,6 +1,6 @@
-import { getErrorStack } from "./error.ts";
-import { dumpHeaders, parseContentType } from "./http-headers.ts";
-import { unit8ReadableStreamToBuffer } from "./stream-to-buffer.ts";
+import { getErrorStack } from "./error.js";
+import { dumpHeaders, parseContentType } from "./http-headers.js";
+import { unit8ReadableStreamToBuffer } from "./stream-to-buffer.js";
 
 /** 1mb */
 const MAX_BODY_SAMPLE_SIZE = 1 * 1024 * 1024;

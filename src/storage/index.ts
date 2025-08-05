@@ -1,15 +1,15 @@
 import Database from "bun:sqlite";
 import { join, resolve } from "node:path";
 import { existsSync, mkdirSync } from "node:fs";
-import type { LoadedConfig } from "../config/loader.ts";
-import { DebugDataWritter } from "../utils/debug-data-writter.ts";
-import { parseAIUpstream, type ParsedAIUpstream } from "../config/parsers/ai-upstream.ts";
-import { Envsubst } from "../utils/envsubst.ts";
-import { BunSQLiteKV } from "../utils/database/kv.bun.ts";
-import { ModelsManager } from "./models.ts";
-import { ProxyAgents } from "./http-proxy-agents.ts";
-import type { KVs } from "./kv.ts";
-import type { ResolvedPlugin } from "../plugins/types.ts";
+import type { LoadedConfig } from "../config/loader.js";
+import { DebugDataWritter } from "../utils/debug-data-writter.js";
+import { parseAIUpstream, type ParsedAIUpstream } from "../config/parsers/ai-upstream.js";
+import { Envsubst } from "../utils/envsubst.js";
+import { BunSQLiteKV } from "../utils/database/kv.bun.js";
+import { ModelsManager } from "./models.js";
+import { ProxyAgents } from "./http-proxy-agents.js";
+import type { KVs } from "./kv.js";
+import type { ResolvedPlugin } from "../plugins/types.js";
 
 export class StorageManager implements Disposable {
   readonly storageDir: string;

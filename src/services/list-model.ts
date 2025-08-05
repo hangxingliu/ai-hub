@@ -1,11 +1,11 @@
-import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.ts";
-import type { StorageManager } from "../storage/index.ts";
-import { fetchUpstreamJSON } from "./base/fetch.ts";
-import type { OpenAIModelsResult } from "../api-types.ts";
-import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
-import { COLORS_ALL } from "../utils/colors/index.ts";
-import { resolveUpstreamURL } from "./base/upstream-url.ts";
-import { updateHeadersToUpstream } from "./base/upstream-headers.ts";
+import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.js";
+import type { StorageManager } from "../storage/index.js";
+import { fetchUpstreamJSON } from "./base/fetch.js";
+import type { OpenAIModelsResult } from "../api-types.js";
+import type { JSONSchema } from "../utils/json-schema/schema-types.js";
+import { COLORS_ALL } from "../utils/colors/index.js";
+import { resolveUpstreamURL } from "./base/upstream-url.js";
+import { updateHeadersToUpstream } from "./base/upstream-headers.js";
 
 const MODELS_RESULT_SCHEMA: JSONSchema = {
   type: "object",

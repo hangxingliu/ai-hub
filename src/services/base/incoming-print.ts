@@ -1,6 +1,6 @@
-import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.ts";
-import { COLORS_ALL } from "../../utils/colors/index.ts";
-import { getErrorMessage } from "../../utils/error.ts";
+import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.js";
+import { COLORS_ALL } from "../../utils/colors/index.js";
+import { getErrorMessage } from "../../utils/error.js";
 
 export function printIncoming(route: string, method: string, url: string | URL, error?: string | Error) {
   let log = `-> [${route}] ${method} `;

@@ -4,28 +4,28 @@ import { request as requestHTTPS } from "https";
 import { WriteStream, createWriteStream } from "fs";
 import { relative } from "path";
 
-import { Tick } from "../../utils/tick.ts";
-import type { PluginFirstArg, PluginStateStorage } from "../../plugins/types.ts";
-import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.ts";
-import type { StorageManager } from "../../storage/index.ts";
-import { isHTTPS } from "../../utils/is-https.ts";
-import { callPlugins, type PluginResult } from "../call-plugins.ts";
-import { parseIncomingBody, type ParsedIncomingBody } from "./incoming-body.ts";
-import { printIncomingForProxy } from "./incoming-print.ts";
-import { updateHeadersToUpstream } from "./upstream-headers.ts";
-import { parseContentType } from "../../utils/http-headers.ts";
-import { COLORS_ALL } from "../../utils/colors/index.ts";
-import { getErrorMessage } from "../../utils/error.ts";
+import { Tick } from "../../utils/tick.js";
+import type { PluginFirstArg, PluginStateStorage } from "../../plugins/types.js";
+import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.js";
+import type { StorageManager } from "../../storage/index.js";
+import { isHTTPS } from "../../utils/is-https.js";
+import { callPlugins, type PluginResult } from "../call-plugins.js";
+import { parseIncomingBody, type ParsedIncomingBody } from "./incoming-body.js";
+import { printIncomingForProxy } from "./incoming-print.js";
+import { updateHeadersToUpstream } from "./upstream-headers.js";
+import { parseContentType } from "../../utils/http-headers.js";
+import { COLORS_ALL } from "../../utils/colors/index.js";
+import { getErrorMessage } from "../../utils/error.js";
 import {
   RESP_INTERNAL_ERROR,
   RESP_NOT_FOUND,
   RESP_METHOD_NOT_ALLOWED,
   RESP_INVALID_BODY_TYPE,
-} from "./basic-responses.ts";
-import { formatSize } from "../../utils/format-size.ts";
-import { resolveUpstreamURL } from "./upstream-url.ts";
-import { createDecoderForContentEncoding } from "../../utils/content-encoding.ts";
-import { stringifyFormData, type StringifiedFormData } from "../../utils/form-data-stringify.ts";
+} from "./basic-responses.js";
+import { formatSize } from "../../utils/format-size.js";
+import { resolveUpstreamURL } from "./upstream-url.js";
+import { createDecoderForContentEncoding } from "../../utils/content-encoding.js";
+import { stringifyFormData, type StringifiedFormData } from "../../utils/form-data-stringify.js";
 
 export type PrepareProxyRules = {
   allowedMethod?: Uppercase<string>[];

@@ -1,4 +1,4 @@
-import type { Config } from "../types.ts";
+import type { Config } from "../types.js";
 
 export const DEFAULT_PORT = 8090;
 

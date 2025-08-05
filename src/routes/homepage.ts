@@ -1,4 +1,4 @@
-import type { StorageManager } from "../storage/index.ts";
+import type { StorageManager } from "../storage/index.js";
 
 export function createHomePageRoute(storage: StorageManager) {
   return async function (req: Bun.BunRequest<"/">): Promise<Response> {

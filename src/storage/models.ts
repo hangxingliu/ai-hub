@@ -1,4 +1,4 @@
-import type { OpenAIModel, OpenAIModelsResult, OpenAIModelWithUpstream } from "../api-types.ts";
+import type { OpenAIModel, OpenAIModelsResult, OpenAIModelWithUpstream } from "../api-types.js";
 
 export class ModelsManager {
   private models: OpenAIModelWithUpstream[] = [];

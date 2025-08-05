@@ -1,5 +1,5 @@
-import { JSONSchemaBuilder } from "../utils/json-schema/schema-build.ts";
-import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
+import { JSONSchemaBuilder } from "../utils/json-schema/schema-build.js";
+import type { JSONSchema } from "../utils/json-schema/schema-types.js";
 
 const { isStr, isStrEnum, isArr, isPort, isInt, isBool } = JSONSchemaBuilder;
 

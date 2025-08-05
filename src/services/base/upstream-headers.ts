@@ -1,4 +1,4 @@
-import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.ts";
+import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.js";
 
 const enum HeaderKeys {
   DEFAULT = "authorization",

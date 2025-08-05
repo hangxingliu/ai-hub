@@ -1,4 +1,4 @@
-import { KVFlag, type KVDatabaseItem } from "./kv-ddl.ts";
+import { KVFlag, type KVDatabaseItem } from "./kv-ddl.js";
 import { gunzipSync, gzipSync } from "zlib";
 import { deserialize, serialize } from "v8";
 

@@ -1,7 +1,7 @@
-import type { Plugin, PluginInitFn } from "../types.ts";
-import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
-import type { TypeFromJSONSchema } from "../../utils/json-schema/types.ts";
-import { COLORS_ALL } from "../../utils/colors/index.ts";
+import type { Plugin, PluginInitFn } from "../types.js";
+import type { JSONSchema } from "../../utils/json-schema/schema-types.js";
+import type { TypeFromJSONSchema } from "../../utils/json-schema/types.js";
+import { COLORS_ALL } from "../../utils/colors/index.js";
 
 const pluginName = "disable-models";
 const configSchema = {

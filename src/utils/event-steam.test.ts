@@ -1,5 +1,5 @@
 import type {OpenAI} from "openai";
-import { StreamEventV1Throttle } from "./event-stream.ts";
+import { StreamEventV1Throttle } from "./event-stream.js";
 
 function test() {
   const count = { all: 0, merged: 0 };

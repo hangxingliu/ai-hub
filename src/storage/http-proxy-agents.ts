@@ -1,10 +1,10 @@
 import { Agent as HttpAgent } from "http";
 import { Agent as HttpsAgent } from "https";
-import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.ts";
-import type { LoadedConfig } from "../config/loader.ts";
-import { getProxyForHttp, getProxyForHttps } from "../utils/http-proxy/proxy-agent.ts";
-// import { parseProxyEnvVars } from "../utils/http-proxy/env.ts";
-import { isHTTPS } from "../utils/is-https.ts";
+import type { ParsedAIUpstream } from "../config/parsers/ai-upstream.js";
+import type { LoadedConfig } from "../config/loader.js";
+import { getProxyForHttp, getProxyForHttps } from "../utils/http-proxy/proxy-agent.js";
+// import { parseProxyEnvVars } from "../utils/http-proxy/env.js";
+import { isHTTPS } from "../utils/is-https.js";
 
 type Agent = HttpAgent | HttpsAgent;
 

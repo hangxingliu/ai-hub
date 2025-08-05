@@ -1,7 +1,7 @@
 import { OpenAI } from "openai";
-import type { StorageManager } from "../storage/index.ts";
-import type { JSONSchema } from "../utils/json-schema/schema-types.ts";
-import type { ParsedFormItem } from "../services/base/incoming-body-form-data.ts";
+import type { StorageManager } from "../storage/index.js";
+import type { JSONSchema } from "../utils/json-schema/schema-types.js";
+import type { ParsedFormItem } from "../services/base/incoming-body-form-data.js";
 
 export type PluginInternalArgs = {
   kill: (statusCode?: number) => void;

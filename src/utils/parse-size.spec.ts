@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { parseSizeString } from "./parse-size.ts";
+import { parseSizeString } from "./parse-size.js";
 
 /**
  * Test basic parsing of plain numeric strings without units.

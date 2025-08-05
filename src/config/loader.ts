@@ -1,10 +1,10 @@
 import { parse as parseYaml } from "yaml";
 import { existsSync, readFileSync } from "fs";
 import { dirname, resolve } from "path";
-import type { Config } from "./types.ts";
-import { validateSchema } from "../utils/json-schema/validator.ts";
-import { configSchema } from "./schema.ts";
-import { getErrorMessage } from "../utils/error.ts";
+import type { Config } from "./types.js";
+import { validateSchema } from "../utils/json-schema/validator.js";
+import { configSchema } from "./schema.js";
+import { getErrorMessage } from "../utils/error.js";
 
 export type LoadedConfig = Config & {
   baseDir: string;

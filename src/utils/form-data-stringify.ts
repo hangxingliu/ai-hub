@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { randomBytes } from "node:crypto";
 import type { Writable } from "node:stream";
-import type { ParsedFormFile, ParsedFormItem } from "../services/base/incoming-body-form-data.ts";
+import type { ParsedFormFile, ParsedFormItem } from "../services/base/incoming-body-form-data.js";
 
 // Define the line break constant used in multipart formatting.
 const LINE_BREAK = "\r\n";

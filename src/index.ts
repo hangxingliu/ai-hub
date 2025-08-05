@@ -1,23 +1,23 @@
 /// <reference path="./assets.d.ts" />
 
 import { parseArgs } from "node:util";
-import { loadConfigFile } from "./config/loader.ts";
-import { getOrUpdateModels, updateModelsFromUpstream } from "./services/list-model.ts";
-import { StorageManager } from "./storage/index.ts";
-import { getBunServerListenOptions } from "./config/parsers/server.ts";
-import { BeforeExit } from "./utils/before-exit.ts";
-import { createV1ModelsRoute } from "./routes/v1-models.ts";
-import { createFallbackRoute } from "./routes/index.ts";
-import { createHomePageRoute } from "./routes/homepage.ts";
-import { initPlugins } from "./plugins/init.ts";
-import { DEFAULT_PLUGINS } from "./plugins/index.ts";
+import { loadConfigFile } from "./config/loader.js";
+import { getOrUpdateModels, updateModelsFromUpstream } from "./services/list-model.js";
+import { StorageManager } from "./storage/index.js";
+import { getBunServerListenOptions } from "./config/parsers/server.js";
+import { BeforeExit } from "./utils/before-exit.js";
+import { createV1ModelsRoute } from "./routes/v1-models.js";
+import { createFallbackRoute } from "./routes/index.js";
+import { createHomePageRoute } from "./routes/homepage.js";
+import { initPlugins } from "./plugins/init.js";
+import { DEFAULT_PLUGINS } from "./plugins/index.js";
 //
 import FAV_ICON_PATH from "../assets/favicon.ico";
-import { parseSizeString } from "./utils/parse-size.ts";
-import { ConfigFileWatcher } from "./config/watcher.ts";
-import { COLORS_ALL } from "./utils/colors/index.ts";
-import { createV1AudioRoutes } from "./routes/v1-audio.ts";
-import { createV1ChatRoutes } from "./routes/v1-chat.ts";
+import { parseSizeString } from "./utils/parse-size.js";
+import { ConfigFileWatcher } from "./config/watcher.js";
+import { COLORS_ALL } from "./utils/colors/index.js";
+import { createV1AudioRoutes } from "./routes/v1-audio.js";
+import { createV1ChatRoutes } from "./routes/v1-chat.js";
 
 const { values: options, positionals: args } = parseArgs({
   options: {

@@ -1,11 +1,11 @@
-import { COLORS_ALL } from "../../utils/colors/index.ts";
-import type { JSONSchema } from "../../utils/json-schema/schema-types.ts";
-import { validateSchema } from "../../utils/json-schema/validator.ts";
-import type { StorageManager } from "../../storage/index.ts";
-import { getErrorMessage } from "../../utils/error.ts";
-import { genHttpDiagnosis } from "../../utils/http-diagnosis.ts";
-import { getRequestHeader } from "../../utils/http-headers.ts";
-import { timeout } from "../../utils/timer.ts";
+import { COLORS_ALL } from "../../utils/colors/index.js";
+import type { JSONSchema } from "../../utils/json-schema/schema-types.js";
+import { validateSchema } from "../../utils/json-schema/validator.js";
+import type { StorageManager } from "../../storage/index.js";
+import { getErrorMessage } from "../../utils/error.js";
+import { genHttpDiagnosis } from "../../utils/http-diagnosis.js";
+import { getRequestHeader } from "../../utils/http-headers.js";
+import { timeout } from "../../utils/timer.js";
 
 function printUpstreamFetch(url: URL, req: BunFetchRequestInit, reqFrom: number, res?: Response, error?: unknown) {
   const { RESET } = COLORS_ALL;

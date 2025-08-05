@@ -1,8 +1,8 @@
 import BunSQLiteDatabase from "bun:sqlite";
 import { Statement, type Changes } from "bun:sqlite";
-import { escapeId } from "./utils.ts";
-import { getKVTableDDL, KVFlag, type KVDatabaseItem } from "./kv-ddl.ts";
-import { SQLiteKVCore } from "./kv.core.ts";
+import { escapeId } from "./utils.js";
+import { getKVTableDDL, KVFlag, type KVDatabaseItem } from "./kv-ddl.js";
+import { SQLiteKVCore } from "./kv.core.js";
 
 export type BunSQLiteKVConfig = {
   db: BunSQLiteDatabase;
