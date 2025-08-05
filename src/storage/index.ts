@@ -10,6 +10,7 @@ import { ModelsManager } from "./models.js";
 import { ProxyAgents } from "./http-proxy-agents.js";
 import type { KVs } from "./kv.js";
 import type { ResolvedPlugin } from "../plugins/types.js";
+import type { AIUpstreamType } from "../config/types.js";
 
 export class StorageManager implements Disposable {
   readonly storageDir: string;
@@ -84,6 +85,15 @@ export class StorageManager implements Disposable {
     const models = this.models.findByModelId(modelId);
     if (models.length === 0) return;
     return this.getUpstream(models[0].upstream);
+  }
+
+  filterUpstreamsByTypes(types: AIUpstreamType[]) {
+    const result: ParsedAIUpstream[] = [];
+    // respect the order of types
+    for (const type of types)
+      for (const upstream of this.upstreams)
+        if (type === upstream.type && !result.includes(upstream)) result.push(upstream);
+    return result;
   }
 
   close() {
