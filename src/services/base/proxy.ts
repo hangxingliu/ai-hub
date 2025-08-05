@@ -118,7 +118,6 @@ export async function proxyReqToUpstream(
   // });
   // return res;
 
-  const writeLogs = !!storage.config.dump_request_logs;
   const upstreamURL = resolveUpstreamURL(upstream.endpoint, incomingURL.pathname);
   upstreamURL.search = incomingURL.search;
 
@@ -165,10 +164,10 @@ export async function proxyReqToUpstream(
     stringifiedForm = parsed;
   }
 
-  let writeResp: string | undefined;
-  if (writeLogs) {
+  let writeRespTo: string | undefined;
+  if (!!storage.config.dump_request_logs) {
     const target = storage.writeLogs("messages", body, false);
-    if (target?.filePath) writeResp = target.filePath.replace(/\.([\w-]+)$/, "-resp.$1");
+    if (target?.filePath) writeRespTo = target.filePath.replace(/\.([\w-]+)$/, "-resp.$1");
   }
 
   const httpProxy = storage.proxyAgents.get(upstream);
@@ -189,11 +188,19 @@ export async function proxyReqToUpstream(
         let debugStream: WriteStream | undefined;
         let debugDecoder: Transform | undefined;
         const encoding = upstreamRes.headers["content-encoding"];
-        if (writeResp) {
-          debugStream = createWriteStream(writeResp, { autoClose: true });
+        const contentType = parseContentType(upstreamRes.headers["content-type"]);
+
+        if (writeRespTo) {
+          debugStream = createWriteStream(writeRespTo, { autoClose: true });
           const prefix: string[] = [upstreamRes.url || ""];
           for (const [key, value] of Object.entries(upstreamRes.headers)) prefix.push(`${key}: ${value}`);
           debugStream.write(`${prefix.join("\n")}\n\n`);
+
+          if (contentType.audioExt) {
+            debugStream.end();
+            writeRespTo = writeRespTo.replace(/\.([\w-]+)$/, `-resp.${contentType.audioExt}`);
+            debugStream = createWriteStream(writeRespTo, { autoClose: true });
+          }
 
           const decoder = createDecoderForContentEncoding(encoding);
           if (decoder) {
@@ -202,9 +209,9 @@ export async function proxyReqToUpstream(
           }
         }
 
-        const contentType = parseContentType(upstreamRes.headers["content-type"]);
         let log = `<- ${upstreamRes.statusCode}`;
         if (contentType.raw) log += ` "${contentType.raw}"`;
+        if (encoding) log += `(${encoding})`;
         if (encoding) log += ` ${COLORS_ALL.BROWN}"${encoding}"${COLORS_ALL.RESET}`;
         log += ` ${COLORS_ALL.DIM}+${tick().str}${COLORS_ALL.RESET}`;
         console.log(log);
@@ -239,7 +246,7 @@ export async function proxyReqToUpstream(
             if (debugDecoder) debugDecoder.end(closeFile);
             else closeFile();
             debugStream = undefined;
-            const relPath = relative(process.cwd(), writeResp!);
+            const relPath = relative(process.cwd(), writeRespTo!);
             console.log(`${COLORS_ALL.DIM}dump to "${relPath}"${COLORS_ALL.RESET}`);
           }
         });

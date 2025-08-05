@@ -2,13 +2,10 @@
 
 import { parseArgs } from "node:util";
 import { loadConfigFile } from "./config/loader.js";
-import { getOrUpdateModels, updateModelsFromUpstream } from "./services/list-model.js";
+import { getOrUpdateModels } from "./services/list-model.js";
 import { StorageManager } from "./storage/index.js";
 import { getBunServerListenOptions } from "./config/parsers/server.js";
 import { BeforeExit } from "./utils/before-exit.js";
-import { createV1ModelsRoute } from "./routes/v1-models.js";
-import { createFallbackRoute } from "./routes/index.js";
-import { createHomePageRoute } from "./routes/homepage.js";
 import { initPlugins } from "./plugins/init.js";
 import { DEFAULT_PLUGINS } from "./plugins/index.js";
 //
@@ -16,8 +13,15 @@ import FAV_ICON_PATH from "../assets/favicon.ico";
 import { parseSizeString } from "./utils/parse-size.js";
 import { ConfigFileWatcher } from "./config/watcher.js";
 import { COLORS_ALL } from "./utils/colors/index.js";
+//
 import { createV1AudioRoutes } from "./routes/v1-audio.js";
 import { createV1ChatRoutes } from "./routes/v1-chat.js";
+import { createV1ImagesRoutes } from "./routes/v1-images.js";
+import { createV1ModelsRoutes } from "./routes/v1-models.js";
+import { createV1EmbeddingsRoutes } from "./routes/v1-embeddings.js";
+import { createV1ResponsesRoutes } from "./routes/v1-responses.js";
+import { createHomePageRoute } from "./routes/homepage.js";
+import { createFallbackRoute } from "./routes/index.js";
 
 const { values: options, positionals: args } = parseArgs({
   options: {
@@ -50,7 +54,11 @@ async function startServer() {
   const listen = getBunServerListenOptions(config);
 
   const v1AudioRoutes = createV1AudioRoutes(storage);
+  const v1ImageRoutes = createV1ImagesRoutes(storage);
+  const v1ResponsesRoutes = createV1ResponsesRoutes(storage);
   const v1ChatRoutes = createV1ChatRoutes(storage);
+  const v1Models = createV1ModelsRoutes(storage);
+  const v1Embeddings = createV1EmbeddingsRoutes(storage);
 
   server = Bun.serve({
     ...listen.options,
@@ -61,13 +69,11 @@ async function startServer() {
       "/": createHomePageRoute(storage),
       "/favicon.ico": Bun.file(FAV_ICON_PATH),
       ...v1AudioRoutes,
+      ...v1ImageRoutes,
+      ...v1ResponsesRoutes,
       ...v1ChatRoutes,
-      "/v1/models": {
-        GET: createV1ModelsRoute(storage),
-      },
-      // gemni api:
-      // https://ai.google.dev/api/models#models_get-SHELL
-      "/v1beta/models": new Response("WIP", { status: 404 }),
+      ...v1Embeddings,
+      ...v1Models,
     },
   });
   console.log(`The AI hub server is listening on ${server.url}`);

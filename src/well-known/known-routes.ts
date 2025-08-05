@@ -30,7 +30,9 @@ export const ALL_KNOWN_ROUTES = {
   //
   // embeddings & tokenize
   //
-  "/v1/embeddings": { POST_JSON: ["Creates an embedding vector representing the input text", "openai", "v1"] },
+  "/v1/embeddings": {
+    POST_JSON: ["Creates an embedding vector representing the input text", "ollama", "openai", "google", "v1"],
+  },
   "/v1/tokenize-text": { POST_JSON: ["Tokenize text with the specified model", "xai"] },
 
   //
@@ -64,7 +66,15 @@ export const ALL_KNOWN_ROUTES = {
   // chat
   //
   "/v1/chat/completions": {
-    POST_JSON: ["Creates a model response for the given chat conversation", "openai", "xai", "v1"],
+    POST_JSON: [
+      "Creates a model response for the given chat conversation",
+      "ollama",
+      "openai",
+      "xai",
+      "anthropic",
+      "google",
+      "v1",
+    ],
     GET: ["List stored Chat Completions", "openai"],
   },
   "/v1/chat/completions/:request_id": {
@@ -84,8 +94,11 @@ export const ALL_KNOWN_ROUTES = {
   "/v1/models": {
     GET: [
       "Lists the currently available models, and provides basic information about each one such as the owner and availability",
+      "ollama",
       "openai",
       "xai",
+      "anthropic",
+      "google",
       "v1",
     ],
   },

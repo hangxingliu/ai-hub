@@ -45,12 +45,14 @@ export type ParsedContentType = {
   isFormData?: true;
   isEventStream?: true;
   raw: string;
+  audioExt?: "mp3" | "aac" | "flac" | "wav" | "pcm" | `opus` | `${string}.dat`;
 };
 
 export function parseContentType(contentType?: Headers | string | null): ParsedContentType {
   let args = "";
+  const result: ParsedContentType = { raw: "" };
   if (contentType && contentType instanceof Headers) contentType = contentType.get("content-type");
-  if (!contentType) return { raw: "" };
+  if (!contentType) return result;
 
   const index = contentType.indexOf(";");
   if (index >= 0) {
@@ -59,8 +61,20 @@ export function parseContentType(contentType?: Headers | string | null): ParsedC
   }
 
   const raw = contentType.toLowerCase();
-  if (contentType.endsWith('/event-stream')) return { isEventStream: true, raw };
-  if (contentType.endsWith("/json")) return { isJSON: true, raw };
-  if (contentType === "multipart/form-data") return { isFormData: true, raw };
-  return { raw };
+  result.raw = raw;
+
+  const audio = raw.match(/^audio\/(.+)$/);
+  if (audio) {
+    const type = audio[1].toLowerCase();
+    if (type === "mpeg") result.audioExt = "mp3";
+    else if (type === "aac" || type === "flac" || type === "opus" || type === "wav" || type === "pcm")
+      result.audioExt = type;
+    else result.audioExt = `${type.replace(/\W+/, "")}.dat`;
+    return result;
+  }
+
+  if (contentType.endsWith("/event-stream")) result.isEventStream = true;
+  else if (contentType.endsWith("/json")) result.isJSON = true;
+  else if (contentType === "multipart/form-data") result.isFormData = true;
+  return result;
 }
