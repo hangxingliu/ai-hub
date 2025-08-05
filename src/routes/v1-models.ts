@@ -1,4 +1,4 @@
-import { printIncoming } from "../services/base/incoming.ts";
+import { printIncoming } from "../services/base/incoming-print.ts";
 import { updateModelsFromUpstream } from "../services/list-model.ts";
 import type { StorageManager } from "../storage/index.ts";
 
