@@ -61,7 +61,7 @@ export function getModelsFromDatabase(storage: StorageManager, upstream: ParsedA
 
 export async function getOrUpdateModels(storage: StorageManager, upstream: ParsedAIUpstream) {
   const fromDB = getModelsFromDatabase(storage, upstream);
-  if (fromDB) return fromDB;
+  if (fromDB) return { models: fromDB, from: "db" };
   const fromUpstream = await updateModelsFromUpstream(storage, upstream);
-  return fromUpstream;
+  return { models: fromUpstream, from: "api" };
 }

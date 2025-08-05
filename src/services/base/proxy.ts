@@ -1,4 +1,4 @@
-import { Readable, Transform } from "stream";
+import { Readable, Transform, Writable } from "stream";
 import { request as requestHTTP } from "http";
 import { request as requestHTTPS } from "https";
 import { WriteStream, createWriteStream } from "fs";
@@ -11,20 +11,34 @@ import type { StorageManager } from "../../storage/index.ts";
 import { isHTTPS } from "../../utils/is-https.ts";
 import { callPlugins, type PluginResult } from "../call-plugins.ts";
 import { parseIncomingBody, type ParsedIncomingBody } from "./incoming-body.ts";
-import { printIncomingForProxy } from "./incoming.ts";
+import { printIncomingForProxy } from "./incoming-print.ts";
 import { updateHeadersToUpstream } from "./upstream-headers.ts";
 import { parseContentType } from "../../utils/http-headers.ts";
 import { COLORS_ALL } from "../../utils/colors/index.ts";
 import { getErrorMessage } from "../../utils/error.ts";
-import { RESP_INTERNAL_ERROR, RESP_NOT_FOUND } from "./basic-responses.ts";
+import {
+  RESP_INTERNAL_ERROR,
+  RESP_NOT_FOUND,
+  RESP_METHOD_NOT_ALLOWED,
+  RESP_INVALID_BODY_TYPE,
+} from "./basic-responses.ts";
 import { formatSize } from "../../utils/format-size.ts";
 import { resolveUpstreamURL } from "./upstream-url.ts";
 import { createDecoderForContentEncoding } from "../../utils/content-encoding.ts";
+import { stringifyFormData, type StringifiedFormData } from "../../utils/form-data-stringify.ts";
+
+export type PrepareProxyRules = {
+  allowedMethod?: Uppercase<string>[];
+  shouldBeForm?: boolean;
+  shouldBeJSON?: boolean;
+};
 
 export async function prepareProxyReqToUpstream(
   storage: StorageManager,
   state: PluginStateStorage,
-  req: Request
+  req: Request,
+  routeName: string,
+  rules: Readonly<PrepareProxyRules> = {}
 ): Promise<
   | {
       resp: Response;
@@ -38,19 +52,27 @@ export async function prepareProxyReqToUpstream(
   let url: URL;
   const method = req.method.toUpperCase() as Uppercase<string>;
 
+  if (rules.allowedMethod && !rules.allowedMethod.includes(method)) return { resp: RESP_METHOD_NOT_ALLOWED };
+
   try {
     url = new URL(req.url);
   } catch (error) {
-    printIncomingForProxy("fallback", method, req.url, "Invalid URL");
+    printIncomingForProxy(routeName, method, req.url, "Invalid URL");
     return { resp: RESP_NOT_FOUND };
   }
+
   const contentType = parseContentType(req.headers);
+  if (rules.shouldBeForm) {
+    if (!contentType.isFormData) return { resp: RESP_INVALID_BODY_TYPE };
+  } else if (rules.shouldBeJSON) {
+    if (!contentType.isJSON) return { resp: RESP_INVALID_BODY_TYPE };
+  }
 
   let body: ParsedIncomingBody;
   try {
-    body = await parseIncomingBody(req, method, contentType);
+    body = await parseIncomingBody(req, method, contentType, storage.proxyFilesDir);
   } catch (error) {
-    printIncomingForProxy("fallback", method, url, getErrorMessage(error));
+    printIncomingForProxy(routeName, method, url, getErrorMessage(error));
     return { resp: RESP_INTERNAL_ERROR };
   }
 
@@ -75,13 +97,33 @@ export async function proxyReqToUpstream(
   method: Uppercase<string>,
   incomingURL: URL,
   incomingHeaders: Headers,
-  body: ParsedIncomingBody
+  body: ParsedIncomingBody,
+  routeName: string
 ) {
+  // ==================
+  // we can't use `fetch` here. because bun blocks and waits for all response from the server.
+  // this behavior breaks the event-stream (SSE)
+  // ==================
+  // const upstreamRes = await fetch(upstreamURL.toString(), {
+  //   method,
+  //   body: rawBody,
+  //   headers,
+  //   redirect: "manual",
+  //   // verbose: true,
+  // });
+  // const res = new Response(resBody as any, {
+  //   status: upstreamRes.status,
+  //   statusText: upstreamRes.statusText,
+  //   headers: upstreamRes.headers,
+  // });
+  // return res;
+
   const writeLogs = !!storage.config.dump_request_logs;
   const upstreamURL = resolveUpstreamURL(upstream.endpoint, incomingURL.pathname);
   upstreamURL.search = incomingURL.search;
 
   const headers = new Headers(incomingHeaders);
+  headers.delete("Content-Length");
   headers.set("Host", upstreamURL.host);
   updateHeadersToUpstream(headers, upstream, true);
 
@@ -104,8 +146,23 @@ export async function proxyReqToUpstream(
     };
     pluginResult = await callPlugins(storage.plugins, "transformJsonBody", args);
     if (pluginResult.response) return pluginResult.response;
+  }
 
-    body.json = args.body;
+  let stringifiedForm: StringifiedFormData;
+  if (body.form) {
+    const args: PluginFirstArg<"transformFormBody"> = {
+      method,
+      target: upstreamURL,
+      body: body.form,
+      state,
+      modelId: body.modelId,
+    };
+    pluginResult = await callPlugins(storage.plugins, "transformFormBody", args);
+    if (pluginResult.response) return pluginResult.response;
+
+    const parsed = stringifyFormData(body.form);
+    for (const [key, value] of Object.entries(parsed.headers)) headers.set(key, value);
+    stringifiedForm = parsed;
   }
 
   let writeResp: string | undefined;
@@ -115,19 +172,10 @@ export async function proxyReqToUpstream(
   }
 
   const httpProxy = storage.proxyAgents.get(upstream);
-  printIncomingForProxy(
-    "fallback",
-    method,
-    incomingURL,
-    undefined,
-    body.modelId,
-    upstream,
-    httpProxy?.url,
-    upstreamURL
-  );
+  printIncomingForProxy(routeName, method, incomingURL, undefined, body.modelId, upstream, httpProxy?.url, upstreamURL);
   console.log(`-> ${upstreamURL.toString()}`);
 
-  return new Promise<Response>((resolve, reject) => {
+  return new Promise<Response>(async (resolve, reject) => {
     const { tick } = new Tick();
     const request = isHTTPS(upstream.endpoint) ? requestHTTPS : requestHTTP;
     const upstreamReq = request(
@@ -181,7 +229,7 @@ export async function proxyReqToUpstream(
         upstreamRes.once("end", () => {
           let log = `<- ${formatSize(totalSizes, false)}`;
           if (totlaChunks > 1) log += ` (${totlaChunks} chunks)`;
-          log += `${COLORS_ALL.DIM}+${tick().str}${COLORS_ALL.RESET}`;
+          log += `${COLORS_ALL.DIM} +${tick().str}${COLORS_ALL.RESET}`;
           console.log(log);
 
           upstreamRes.off("data", onData);
@@ -213,10 +261,15 @@ export async function proxyReqToUpstream(
       if (body.json) {
         upstreamReq.write(JSON.stringify(body.json));
         upstreamReq.end();
+      } else if (body.form) {
+        stringifiedForm.write(upstreamReq);
+        upstreamReq.end();
       } else if (body.raw) {
         upstreamReq.write(body.raw);
         upstreamReq.end();
-      } else Readable.from(body.original).pipe(upstreamReq);
+      } else {
+        Readable.from(body.original).pipe(upstreamReq);
+      }
     } else {
       upstreamReq.end();
     }

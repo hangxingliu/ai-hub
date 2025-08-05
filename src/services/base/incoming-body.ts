@@ -1,6 +1,6 @@
-import type { BunRequest } from "bun";
 import type { ParsedContentType } from "../../utils/http-headers.ts";
 import { getErrorMessage } from "../../utils/error.ts";
+import { parseIncomingFormData, type ParsedFormItem } from "./incoming-body-form-data.ts";
 
 export function parseIncomingModelId(body: unknown) {
   if (body && typeof body === "object") {
@@ -10,9 +10,10 @@ export function parseIncomingModelId(body: unknown) {
 }
 
 export type ParsedIncomingBody = {
-  original: Request['body'] | null,
+  original: Request["body"] | null;
   raw?: ArrayBuffer;
   json?: unknown;
+  form?: ParsedFormItem[];
   warning?: string;
   modelId?: string;
 };
@@ -20,21 +21,23 @@ export type ParsedIncomingBody = {
 export async function parseIncomingBody(
   req: Request,
   method: Uppercase<string>,
-  contentType: ParsedContentType
+  contentType: ParsedContentType,
+  filesDir: string
 ): Promise<ParsedIncomingBody> {
   let rawBody: ArrayBuffer | undefined;
   let jsonBody: unknown | undefined;
   let warning: string | undefined;
   let modelId: string | undefined;
+  let form: ParsedFormItem[] | undefined;
 
-  if (contentType.isJSON && method !== "GET" && method !== "HEAD") {
-    try {
-      rawBody = await req.arrayBuffer();
-    } catch (error) {
-      throw "Failed to load body: " + getErrorMessage(error);
-    }
-
+  if (method !== "GET" && method !== "HEAD") {
     if (contentType.isJSON) {
+      try {
+        rawBody = await req.arrayBuffer();
+      } catch (error) {
+        throw "Failed to load body: " + getErrorMessage(error);
+      }
+
       try {
         jsonBody = JSON.parse(Buffer.from(rawBody).toString("utf-8"));
       } catch (error) {
@@ -42,8 +45,14 @@ export async function parseIncomingBody(
       }
 
       modelId = parseIncomingModelId(jsonBody);
+    } else if (contentType.isFormData) {
+      // rawBody = await req.arrayBuffer();
+      form = await parseIncomingFormData(req, filesDir);
+
+      const rawModelVal = form.find((it) => it[0] === "model");
+      if (typeof rawModelVal?.[1] === "string") modelId = rawModelVal[1];
     }
   }
 
-  return { original: req.body, raw: rawBody, json: jsonBody, warning, modelId };
+  return { original: req.body, raw: rawBody, json: jsonBody, form, warning, modelId };
 }

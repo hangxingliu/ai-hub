@@ -5,19 +5,17 @@ export class Tick {
 
   ms = 0;
   get str() {
-    let sec = this.ms / 1000;
-    if (sec > 60) {
-      const min = Math.floor(sec / 60);
-      sec -= min * 60;
-      return min + "m " + Math.floor(sec) + "s";
-    }
-    return sec.toFixed(2) + "s";
+    return Tick.msToStr(this.ms);
   }
 
   readonly tick = () => {
     this.ms = performance.now() - this.lastTick;
     this.lastTick = performance.now();
     return { ms: this.ms, str: this.str };
+  };
+  readonly peek = () => {
+    const ms = performance.now() - this.lastTick;
+    return { ms, str: this.str };
   };
 
   readonly throttle = async (ms: number, signal?: AbortSignal) => {
@@ -28,5 +26,15 @@ export class Tick {
 
   constructor() {
     this.lastTick = performance.now();
+  }
+
+  static msToStr(ms: number) {
+    let sec = ms / 1000;
+    if (sec > 60) {
+      const min = Math.floor(sec / 60);
+      sec -= min * 60;
+      return min + "m " + Math.floor(sec) + "s";
+    }
+    return sec.toFixed(2) + "s";
   }
 }
