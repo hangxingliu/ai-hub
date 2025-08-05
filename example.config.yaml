@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=./assets/config-schema.json
+port: 8090
+# hostname: 127.0.0.1
+# max_request_body_size: 128MiB
+# override_model_owned_by: openai
+# respect_system_proxy: true
+# dump_request_logs: true
+storage:
+  baseDir: ./storage
+upstreams:
+  # - name: xai
+  #   endpoint: https://api.x.ai/v1
+  #   default_api_key: ${XAI_API_KEY}
+  # - name: openai
+  #   endpoint: https://api.openai.com/v1
+  #   default_api_key: ${OPENAI_API_KEY}
+  # - name: anthropic
+  #   type: anthropic
+  #   endpoint: https://api.anthropic.com/v1
+  #   default_api_key: ${ANTHROPIC_API_KEY}
+  # - name: google
+  #   endpoint: https://generativelanguage.googleapis.com/v1beta/openai/
+  #   default_api_key: ${GEMINI_API_KEY}
+  - name: ollama
+    endpoint: http://127.0.0.1:11434/v1
+    fallback: true
+plugins:
+  - use: rewrite-model-id
+    configs:
+      rules:
+        - match: (gemini-.+)
+          replace: models/$1
+  - use: remove-telemetry-headers
+  # - use: keep-only-last-message
+  # - use: replace-messages
+  #   configs:
+  #     rules:
+  #       - search: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+  #         replace: "UUID_STRING"
+  #         regex: "ig"
+  #         description: 'remove UUID string'
+  - use: debug-request-messages
+  # - use: disable-models
+  #   configs:
+  #     patterns:
+  #       - .+-pro
