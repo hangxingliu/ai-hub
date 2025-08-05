@@ -1,5 +1,3 @@
-import BunSQLiteDatabase from "bun:sqlite";
-
 export function getKVTableDDL(escapedId: string) {
   const sqls: string[] = [];
   sqls.push(`PRAGMA journal_mode = WAL;`);
@@ -32,16 +30,3 @@ export type KVDatabaseItem<Value = Uint8Array> = {
   flags: number;
 };
 
-export type BunSQLiteKVConfig = {
-  db: BunSQLiteDatabase;
-  tableName: string;
-  schemaName?: string;
-  init?: boolean;
-
-  /** ms */
-  defaultTTL?: number;
-  /** compress large data by default */
-  compression?: boolean;
-  /** use V8's serialization by default */
-  serialization?: boolean;
-};

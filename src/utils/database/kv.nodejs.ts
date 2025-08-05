@@ -1,13 +1,29 @@
-import { Statement, type Changes } from "bun:sqlite";
+import { StatementSync, type DatabaseSync, type StatementResultingChanges as Changes } from "node:sqlite";
 import { escapeId } from "./utils.ts";
-import { getKVTableDDL, KVFlag, type BunSQLiteKVConfig, type KVDatabaseItem } from "./kv-ddl.ts";
-import { gunzipSync, gzipSync } from "bun";
-import { deserialize, serialize } from "v8";
+import { getKVTableDDL, KVFlag, type KVDatabaseItem } from "./kv-ddl.ts";
+import { SQLiteKVCore } from "./kv.core.ts";
+
+// compatible types with BunSQLiteKV
+type Statement<T, T2 = unknown> = StatementSync;
+
+export type NodejsSQLiteKVConfig = {
+  db: DatabaseSync;
+  tableName: string;
+  schemaName?: string;
+  init?: boolean;
+
+  /** ms */
+  defaultTTL?: number;
+  /** compress large data by default */
+  compression?: boolean;
+  /** use V8's serialization by default */
+  serialization?: boolean;
+};
 
 /**
  * @version 2025-07-26
  */
-export class BunSQLiteKV<Values extends { [key: string]: any }> {
+export class NodejsSQLiteKV<Values extends { [key: string]: any }> {
   readonly id: string;
   readonly statGet: Statement<KVDatabaseItem, [{ $key: string; $now: number }]>;
   readonly statByPage: Statement<KVDatabaseItem, [{ $offset: number; $limit: number; $now: number }]>;
@@ -34,7 +50,7 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
   readonly statClear: Statement<never>;
   readonly statCleanup: Statement<never, [{ $now: number }]>;
 
-  constructor(private readonly config: BunSQLiteKVConfig) {
+  constructor(private readonly config: NodejsSQLiteKVConfig) {
     const { db, tableName, schemaName, init } = config;
     let id = escapeId(tableName);
     if (schemaName) id = `${escapeId(schemaName)}.${id}`;
@@ -60,8 +76,8 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
     this.statGlobDelete = db.prepare(`DELETE FROM ${id} WHERE key GLOB $glob`);
     this.statCount = db.prepare(`SELECT COUNT(0) as count FROM ${id} WHERE ${NOT_EXP}`);
     this.statGlobCount = db.prepare(`SELECT COUNT(0) as count FROM ${id} WHERE ${NOT_EXP} AND key GLOB $glob`);
-    this.statClear = db.query(`DELETE FROM ${id}`);
-    this.statCleanup = db.query(`DELETE FROM ${id} WHERE expires IS NOT NULL AND expires <= $now`);
+    this.statClear = db.prepare(`DELETE FROM ${id}`);
+    this.statCleanup = db.prepare(`DELETE FROM ${id} WHERE expires IS NOT NULL AND expires <= $now`);
 
     if (init !== false) this.cleanup();
   }
@@ -70,9 +86,9 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
     return this.getWithMeta(key)?.value;
   }
   getWithMeta<Key extends keyof Values>(key: Key): KVDatabaseItem<Values[Key]> | undefined {
-    const item = this.statGet.get({ $key: key as string, $now: Date.now() });
+    const item = this.statGet.get({ $key: key as string, $now: Date.now() }) as KVDatabaseItem | undefined;
     if (!item) return undefined;
-    return { ...item, value: BunSQLiteKV.decodeDBValue(item) };
+    return { ...item, value: SQLiteKVCore.decodeDBValue(item) };
   }
   /**
    * @param args `page` is a 1-based page number
@@ -86,7 +102,8 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
     if (args.page) page.$offset = (args.page - 1) * page.$limit;
 
     const res = args.glob ? this.statGlobByPage.all({ ...page, $glob: args.glob }) : this.statByPage.all(page);
-    for (const item of res) (item as KVDatabaseItem<Values[Key]>).value = BunSQLiteKV.decodeDBValue(item);
+    for (const item of res)
+      (item as KVDatabaseItem<Values[Key]>).value = SQLiteKVCore.decodeDBValue(item as KVDatabaseItem<Values[Key]>);
     return res as KVDatabaseItem<Values[Key]>[];
   }
   /**
@@ -112,7 +129,7 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
     let expires: number | null = null;
     if (typeof ttl === "number" && ttl > 0) expires = now + ttl;
 
-    const encoded = BunSQLiteKV.encodeDBValue(val, flags);
+    const encoded = SQLiteKVCore.encodeDBValue(val, flags);
     return this.statSet.run({
       $key: key as string,
       $value: encoded.val,
@@ -134,40 +151,5 @@ export class BunSQLiteKV<Values extends { [key: string]: any }> {
   count(glob?: string) {
     if (glob) return this.statGlobCount.get({ $glob: glob, $now: Date.now() })!.count || 0;
     return this.statCount.get({ $now: Date.now() })!.count || 0;
-  }
-
-  static MIN_GZ_SIZE = 1024;
-  static encodeDBValue(val: any, _flags: KVFlag): { val: Buffer | Uint8Array; flags: number } {
-    let buffer: Buffer | Uint8Array;
-    let flags = KVFlag.NONE;
-
-    if (_flags & KVFlag.SERIALIZED) {
-      buffer = serialize(val);
-      flags = KVFlag.SERIALIZED;
-    } else if (_flags & KVFlag.JSON) {
-      buffer = Buffer.from(JSON.stringify(val), "utf8");
-      flags = KVFlag.JSON;
-    } else {
-      buffer = val instanceof Buffer ? val : Buffer.from(String(val), "utf8");
-    }
-
-    if (buffer.length > BunSQLiteKV.MIN_GZ_SIZE && _flags & KVFlag.COMPRESSED) {
-      buffer = gzipSync(buffer);
-      flags |= KVFlag.COMPRESSED;
-    }
-    return { val: buffer, flags };
-  }
-
-  static decodeDBValue<T = any>(item: KVDatabaseItem): T {
-    const val = item.flags & KVFlag.COMPRESSED ? Buffer.from(gunzipSync(item.value)) : item.value;
-    if (item.flags & KVFlag.SERIALIZED) {
-      const decoded = deserialize(val);
-      return decoded;
-    }
-    if (item.flags & KVFlag.JSON) {
-      const str = (Buffer.isBuffer(val) ? val : Buffer.from(val)).toString("utf8");
-      return JSON.parse(str);
-    }
-    return val as T;
   }
 }
