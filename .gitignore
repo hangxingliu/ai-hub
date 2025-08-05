@@ -5,6 +5,7 @@
 !/.aiderignore
 
 storage/logs
+storage/files
 storage/*.db
 storage/*.db-shm
 storage/*.db-wal
