@@ -2,14 +2,13 @@
 updated_at: 2025-07-29 03:47:11
 ---
 
-# AI Hub
+![A diagram for summarizing this project](./docs/images/main-diagram.png)
 
-A unified entry point for connecting multiple AI service providers.
+## AI Hub
+
+A unified entry point for connecting multiple AI service prboviders.
 
 [TOC]
-
-## Introduction
-
 
 ## Installation
 
