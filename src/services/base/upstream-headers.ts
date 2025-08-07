@@ -3,6 +3,7 @@ import type { ParsedAIUpstream } from "../../config/parsers/ai-upstream.js";
 const enum HeaderKeys {
   DEFAULT = "authorization",
   ANTHROPIC = "x-api-key",
+  GOOGLE = "x-goog-api-key",
 }
 
 function isNullAuth(auth?: string | null) {
@@ -23,6 +24,7 @@ export function updateHeadersToUpstream(headers: Headers, upstream: ParsedAIUpst
 
   if (!openaiCompatibility) {
     if (upstream.type === "anthropic") authKey = HeaderKeys.ANTHROPIC;
+    else if (upstream.type === "google") authKey = HeaderKeys.GOOGLE;
   }
 
   if (upstream.override_api_key) {
@@ -46,6 +48,8 @@ export function updateHeadersToUpstream(headers: Headers, upstream: ParsedAIUpst
     if (authKey === HeaderKeys.ANTHROPIC) {
       headers.set(authKey, authVal);
       headers.set("anthropic-version", upstream.api_version!);
+    } else if (authKey === HeaderKeys.GOOGLE) {
+      headers.set(authKey, authVal);
     } else {
       headers.set(authKey, `Bearer ${authVal}`);
     }

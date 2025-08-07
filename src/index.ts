@@ -2,7 +2,7 @@
 
 import { parseArgs } from "node:util";
 import { loadConfigFile } from "./config/loader.js";
-import { getOrUpdateModels } from "./services/list-model.js";
+import { getOrUpdateAllModels, getOrUpdateModels } from "./services/list-model.js";
 import { StorageManager } from "./storage/index.js";
 import { getBunServerListenOptions } from "./config/parsers/server.js";
 import { BeforeExit } from "./utils/before-exit.js";
@@ -46,10 +46,7 @@ async function startServer() {
   }
 
   await initPlugins(storage, Array.isArray(config.plugins) ? config.plugins : [...DEFAULT_PLUGINS]);
-  for (const upstream of storage.upstreams) {
-    const { models, from } = await getOrUpdateModels(storage, upstream);
-    console.log(`Loaded ${models.data.length} ${upstream.name} models from ${from}`);
-  }
+  await getOrUpdateAllModels(storage);
 
   const listen = getBunServerListenOptions(config);
 

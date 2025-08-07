@@ -14,7 +14,7 @@ function printUpstreamFetch(url: URL, req: BunFetchRequestInit, reqFrom: number,
 
   let log = String(req.method || "GET").toUpperCase();
   log = (log === "GET" ? COLORS_ALL.GRAY_LIGHT : COLORS_ALL.GLOD) + log;
-  log += ` ${url.pathname} [host=${url.host}}]${RESET}`;
+  log += ` ${url.pathname} [host=${url.host}]${RESET}`;
 
   if (req.body) log += ` [with-body]`;
 
