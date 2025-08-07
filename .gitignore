@@ -1,4 +1,6 @@
 # -*- mode: gitignore; -*-
+.$*.bkp
+
 /.aider*
 /config.yaml
 /docs/__private

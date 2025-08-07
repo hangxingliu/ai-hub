@@ -18,8 +18,13 @@ upstreams:
   #   type: anthropic
   #   endpoint: https://api.anthropic.com/v1
   #   default_api_key: ${ANTHROPIC_API_KEY}
+  # - name: google_compatible
+  #   type: v1
+  #   endpoint: https://generativelanguage.googleapis.com/v1beta/openai
+  #   default_api_key: ${GEMINI_API_KEY}
   # - name: google
-  #   endpoint: https://generativelanguage.googleapis.com/v1beta/openai/
+  #   type: google
+  #   endpoint: https://generativelanguage.googleapis.com/v1beta
   #   default_api_key: ${GEMINI_API_KEY}
   - name: ollama
     endpoint: http://127.0.0.1:11434/v1
