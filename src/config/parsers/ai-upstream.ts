@@ -1,6 +1,7 @@
 import { sha256hex } from "../../utils/sha256.js";
 import type { AIUpstream, AIUpstreamType } from "../types.js";
 import type { Envsubst } from "../../utils/envsubst.js";
+import { getDefaultAIUpstreamType } from "./ai-upstream-default-type.js";
 
 export type ParsedAIUpstream = {
   hash: string;
@@ -46,11 +47,7 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
   const hash = createAIUpstreamHash(upstream);
   const endpoint = new URL(upstream.endpoint);
   let type = upstream.type;
-  if (!type) {
-    if (endpoint.hostname === "api.openai.com") type = "openai";
-    else if (endpoint.hostname === "api.x.ai") type = "xai";
-    else type = "v1";
-  }
+  if (!type) type = getDefaultAIUpstreamType(endpoint);
 
   const default_headers: ParsedAIUpstream["default_headers"] = [];
   if (upstream.default_headers)
