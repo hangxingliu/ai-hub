@@ -9,6 +9,7 @@ A unified entry point for connecting multiple AI service prboviders.
 
 ```bash
 # Install Bun
+# https://bun.com/
 curl -fsSL https://bun.sh/install | bash
 
 # Clong this repository
@@ -19,13 +20,21 @@ cd ai-hub
 bun install
 
 # Generate your config from example.config.yaml
+# You can use environment variables in the config file by the pattern: ${ENV_NAME}
 cp example.config.yaml config.yaml
+
+# [OPTIONAL] You can create a .env file for adding custom environment variables
+code .env
+
 code config.yaml
 
 # Start the server
 bun start
 ```
 
+## How-to Guide
+
+Please read the document [docs/HOWTO.md](./docs/HOWTO.md) to know how to configure the project, how to write plugins, ...
 
 ## Built-in Plugins
 
@@ -42,6 +51,11 @@ bun start
 Please check out the document [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for information
 about building/contributing this project
 
+### Known Issues
+
+This project runs on a very fast JavaScript/TypeScript runtime [Bun](https://bun.com/). But there are some known issues, you can check out the following documents for more details:
+
+[docs/KNOWN-ISSUES.md](./docs/KNOWN-ISSUES.md)
 
 ## License
 
