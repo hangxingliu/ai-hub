@@ -85,7 +85,7 @@ export async function updateModelsFromUpstream(storage: StorageManager, upstream
     log += ` ${COLORS_ALL.CYAN_DARK}new=${JSON.stringify(changes.newModels)}${COLORS_ALL.RESET}`;
   console.log(log);
 
-  storage.kv.set(`models:${upstream.name}:${upstream.hash}`, models, 24 * 3600 * 1000);
+  storage.kv.set(`models:${upstream.name}:${upstream.hash}`, models, upstream.models_cache_ttl * 1000);
   return models;
 }
 
@@ -95,18 +95,25 @@ export function getModelsFromDatabase(storage: StorageManager, upstream: ParsedA
   return models;
 }
 
-export async function getOrUpdateModels(storage: StorageManager, upstream: ParsedAIUpstream) {
+export type GetOrUpdateModelsResult = {
+  models: OpenAIModelsResult;
+  from: "db" | "api";
+};
+export async function getOrUpdateModels(
+  storage: StorageManager,
+  upstream: ParsedAIUpstream
+): Promise<GetOrUpdateModelsResult> {
   const fromDB = getModelsFromDatabase(storage, upstream);
   if (fromDB) return { models: fromDB, from: "db" };
   const fromUpstream = await updateModelsFromUpstream(storage, upstream);
   return { models: fromUpstream, from: "api" };
 }
 
-export async function getOrUpdateAllModels(storage: StorageManager) {
+export async function getOrUpdateAllModels(storage: StorageManager, quiet: boolean) {
   const promises = storage.upstreams.map(async (upstream) => {
     try {
       const { models, from } = await getOrUpdateModels(storage, upstream);
-      console.log(`Loaded ${models.data.length} ${upstream.name} models from ${from}`);
+      if (!quiet || from === "api") console.log(`Loaded ${models.data.length} ${upstream.name} models from ${from}`);
     } catch (error) {
       console.error(`Failed to load models from the upstream ${upstream.name}:`);
       console.error(error);

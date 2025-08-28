@@ -15,6 +15,19 @@
       "type": "string",
       "description": "If set, the HTTP server will listen on a unix socket instead of a port."
     },
+    "models_cache_ttl": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "pattern": "\\d+(?:\\.\\d+)?(?:[smhdSMHD])?"
+        }
+      ],
+      "default": "60m",
+      "description": "TTL of list models result. Default unit: second. Example: 30s, 60m, 3h, 2d"
+    },
     "respect_system_proxy": {
       "type": "boolean",
       "default": true,
@@ -94,6 +107,19 @@
           "only_public_models": {
             "type": "boolean",
             "description": "List models without providing API keys"
+          },
+          "models_cache_ttl": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string",
+                "pattern": "\\d+(?:\\.\\d+)?(?:[smhdSMHD])?"
+              }
+            ],
+            "default": "60m",
+            "description": "TTL of list models result. Default unit: second. Example: 30s, 60m, 3h, 2d"
           },
           "api_version": {
             "type": "string",

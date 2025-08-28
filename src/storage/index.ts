@@ -11,6 +11,8 @@ import { ProxyAgents } from "./http-proxy-agents.js";
 import type { KVs } from "./kv.js";
 import type { ResolvedPlugin } from "../plugins/types.js";
 import type { AIUpstreamType } from "../config/types.js";
+import { DEFAULT_MODELS_CACHE_TTL } from "../config/schema.js";
+import { parseCacheTTL } from "../utils/parse-cache-ttl.js";
 
 export class StorageManager implements Disposable {
   readonly storageDir: string;
@@ -33,12 +35,20 @@ export class StorageManager implements Disposable {
 
   readonly plugins: ResolvedPlugin[] = [];
 
-  constructor(readonly config: LoadedConfig, prev?: StorageManager) {
+  constructor(
+    readonly config: LoadedConfig,
+    prev?: StorageManager
+  ) {
     let relDir = "storage";
     if (config.storage?.baseDir) relDir = config.storage.baseDir;
 
     const env = new Envsubst();
-    this.upstreams = config.upstreams.map((it) => parseAIUpstream(it, env));
+    let defaultModelsCacheTTL: number = DEFAULT_MODELS_CACHE_TTL;
+    if (typeof config.models_cache_ttl === "number" || config.models_cache_ttl) {
+      const ttl = parseCacheTTL(config.models_cache_ttl);
+      if (ttl >= 0) defaultModelsCacheTTL = ttl;
+    }
+    this.upstreams = config.upstreams.map((it) => parseAIUpstream(it, env, { defaultModelsCacheTTL }));
     this.proxyAgents = new ProxyAgents(config);
 
     const fallbackUpstreams = this.upstreams.filter((it) => it.fallback);

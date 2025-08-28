@@ -8,6 +8,7 @@ export interface AIUpstream {
   fallback?: boolean;
   proxy?: string;
   only_public_models?: boolean;
+  models_cache_ttl?: string | number;
   type?: AIUpstreamType;
   api_version?: string;
   default_headers?: Record<string, string>;
@@ -31,6 +32,7 @@ export interface Config {
   override_model_owned_by?: string;
   dump_request_logs?: boolean;
   max_request_body_size?: string | number;
+  models_cache_ttl?: string | number;
   //
   storage: Storage;
   //

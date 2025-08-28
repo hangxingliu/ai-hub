@@ -3,7 +3,15 @@ import type { JSONSchema } from "../utils/json-schema/schema-types.js";
 
 const { isStr, isStrEnum, isArr, isPort, isInt, isBool } = JSONSchemaBuilder;
 
+export const DEFAULT_MODELS_CACHE_TTL = 3600 as const;
+
 export const aiUpstreamTypeSchemaEnum = ["v1", "xai", "anthropic", "google", "ollama", "openai"] as const;
+
+export const modelsCacheTTLSchema = {
+  oneOf: [isInt(), isStr({ pattern: "\\d+(?:\\.\\d+)?(?:[smhdSMHD])?" })],
+  default: "60m",
+  description: "TTL of list models result. Default unit: second. Example: 30s, 60m, 3h, 2d",
+} satisfies JSONSchema;
 
 export const aiUpstreamSchema = {
   type: "object",
@@ -20,6 +28,7 @@ export const aiUpstreamSchema = {
         "AI upstream compatible type ('v1' represents this AI provider is compatibility with OpenAI v1 REST APIs. This is the default value)",
     }),
     only_public_models: isBool("List models without providing API keys"),
+    models_cache_ttl: modelsCacheTTLSchema,
     api_version: isStr("For example: '2023-06-01' for Anthropic upstream"),
     default_headers: {
       type: "object",
@@ -54,6 +63,7 @@ export const configSchema = {
     port: isPort("The port the server is listening on."),
     hostname: isStr("The hostname the server is listening on. Does not include the port."),
     unix_socket: isStr("If set, the HTTP server will listen on a unix socket instead of a port."),
+    models_cache_ttl: modelsCacheTTLSchema,
     //
     respect_system_proxy: isBool(
       true,

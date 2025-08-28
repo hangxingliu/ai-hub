@@ -46,7 +46,7 @@ async function startServer() {
   }
 
   await initPlugins(storage, Array.isArray(config.plugins) ? config.plugins : [...DEFAULT_PLUGINS]);
-  await getOrUpdateAllModels(storage);
+  await getOrUpdateAllModels(storage, false);
 
   const listen = getBunServerListenOptions(config);
 

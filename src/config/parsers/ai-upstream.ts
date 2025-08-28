@@ -2,6 +2,7 @@ import { sha256hex } from "../../utils/sha256.js";
 import type { AIUpstream, AIUpstreamType } from "../types.js";
 import type { Envsubst } from "../../utils/envsubst.js";
 import { getDefaultAIUpstreamType } from "./ai-upstream-default-type.js";
+import { parseCacheTTL } from "../../utils/parse-cache-ttl.js";
 
 export type ParsedAIUpstream = {
   hash: string;
@@ -17,6 +18,9 @@ export type ParsedAIUpstream = {
   type: AIUpstreamType;
   api_version?: string;
   default_headers: [key: Lowercase<string>, value: string][];
+  //
+  /** unit: seconds */
+  models_cache_ttl: number;
 };
 
 export function createAIUpstreamHash(upstream: AIUpstream) {
@@ -37,7 +41,11 @@ export function createAIUpstreamHash(upstream: AIUpstream) {
   return sha256hex(JSON.stringify(hashInput));
 }
 
-export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst): ParsedAIUpstream {
+export function parseAIUpstream(
+  _upstream: Readonly<AIUpstream>,
+  env: Envsubst,
+  opts: { defaultModelsCacheTTL: number }
+): ParsedAIUpstream {
   const upstream = { ..._upstream };
   upstream.endpoint = env.subst(upstream.endpoint);
   if (upstream.default_api_key) upstream.default_api_key = env.subst(upstream.default_api_key);
@@ -61,6 +69,17 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
     upstream.api_version = "2023-06-01";
   }
 
+  let ttl = opts.defaultModelsCacheTTL;
+  const inUpstreamTTL = upstream.models_cache_ttl;
+  if (typeof inUpstreamTTL === "number" || inUpstreamTTL) {
+    const _ttl = parseCacheTTL(inUpstreamTTL);
+    if (_ttl < 0) {
+      console.warn(`Invalid models_cache_ttl ${JSON.stringify(inUpstreamTTL)} in the upstream "${upstream.name}"`);
+    } else {
+      ttl = _ttl;
+    }
+  }
+
   return {
     hash,
     name: upstream.name,
@@ -71,6 +90,7 @@ export function parseAIUpstream(_upstream: Readonly<AIUpstream>, env: Envsubst):
     api_version: upstream.api_version,
     proxy: upstream.proxy,
     only_public_models: upstream.only_public_models || false,
+    models_cache_ttl: ttl,
     type,
     default_headers,
   };
