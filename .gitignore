@@ -1,10 +1,14 @@
 # -*- mode: gitignore; -*-
 .$*.bkp
 
+# copilot config files
 /.aider*
+!/.aiderignore
+/*-agent.yml
+/*-agent.yaml
+
 /config.yaml
 /docs/__private
-!/.aiderignore
 
 storage/logs
 storage/files
